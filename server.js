@@ -1,21 +1,33 @@
-var http = require('http');
+const express = require('express')
+const app = express()
+const port = 3000
 
-http.createServer((req, res) => {
-  console.log('Er was een request');
-  res.writeHead(200, {'Content-Type': 'text/plain'});
+const birds = require('./birds')
+const user = require('./user')
+const book = require('./book')
 
-  var exampleArray = ["item1", "item2"]
-  var exampleObject = {
-    item1: "item1val",
-    item2: "item2val"
-  }
-  var json = JSON.stringify({
-    array: exampleArray,
-    object: exampleObject,
-    another: "item"
-  });
+app.route('/')
+  .all((req, res, next) => {
+    console.log('oh shit')
+    next()
+  })
+  .get((req, res) => {
+    res.send('Hello World!')
+    console.log('Hello World!')
+  })
+  .post((req, res) => {
+    res.send('Got a POST request')
+    console.log('Got a POST request')
+  })
+  .put((req, res) => {
+    res.send('Got a PUT request')
+    console.log('Got a PUT request')
+  })
+  
+app.use('/user', user)
+app.use('/birds', birds)
+app.use('/book', book)
 
-  res.end(json);
-}).listen(3000);
-
-console.log('De server luistert op poort 3000')
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+})
