@@ -94,6 +94,7 @@ router.get("/user", (req, res) => {
       data: sanitizedUsers,
     });
   } else {
+      // Implementation doesn't update when new user is added
     const filteredUsers = User.users.filter((user) => {
       let matchesFilters = true;
       for (const key in req.query) {
@@ -131,7 +132,7 @@ router.get("/user", (req, res) => {
   }
 });
 
-// UC-203 /api/user/:userId
+// UC-203 /api/user/profile
 router.get("/user/profile", (req, res) => {
   res.status(501).json({
     status: "501",
@@ -187,7 +188,7 @@ router.route("/user/:userId")
         editUser.city = city;
         editUser.email = email;
         editUser.password = password;
-        editUser.phonenumber = phonenumber;
+        editUser.phoneNumber = phonenumber;
         console.log(editUser.firstName + " " + editUser.lastName)
         res.status(201).json({
           status: "201",
