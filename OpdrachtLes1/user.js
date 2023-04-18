@@ -1,5 +1,3 @@
-const crypto = require('crypto');
-
 class User {
     constructor(id, firstName, lastName, street, city, isActive, email, password, phoneNumber) {
         this.id = id;

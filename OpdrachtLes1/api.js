@@ -3,9 +3,7 @@ const router = express.Router();
 const User = require("./user");
 //TODO: Shit's broke, can't request newly registered users
 
-
 const bodyParser = require("body-parser");
-// const crypto = require('crypto');
 
 router.use(bodyParser.json());
 
