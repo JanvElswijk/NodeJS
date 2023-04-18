@@ -1,60 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const User = require("./user");
+//TODO: Shit's broke, can't request newly registered users
+
 
 const bodyParser = require("body-parser");
 // const crypto = require('crypto');
 
 router.use(bodyParser.json());
-
-// TODO: Generate and add tokens to users
-const users = [
-  new User(
-    1,
-    "John",
-    "Doe",
-    "Main Street 1",
-    "New York",
-    true,
-    "john@avans.nl",
-    "1234",
-    "0612345678"
-  ),
-  new User(
-    2,
-    "Jane",
-    "Doe",
-    "Main Street 2",
-    "New York",
-    true,
-    "jane@avans.nl",
-    "1234",
-    "0612345678"
-  ),
-  new User(
-    3,
-    "Jack",
-    "Doe",
-    "Main Street 3",
-    "New York",
-    true,
-    "jack@avans.nl",
-    "1234",
-    "0612345678"
-  ),
-  new User(
-    4,
-    "Jill",
-    "Doe",
-    "Main Street 4",
-    "New York",
-    true,
-    "jill@avans.nl",
-    "1234",
-    "0612345678"
-  ),
-];
-
 
 // UC-201 /api/register
 router.post("/register", (req, res) => {
@@ -78,7 +31,7 @@ router.post("/register", (req, res) => {
   }
 
   // Check if email is unique
-  const existingUser = users.find((user) => user.email === email);
+  const existingUser = User.users.find((user) => user.email === email);
   if (existingUser) {
     return res.status(409).json({
       status: "409",
@@ -88,7 +41,7 @@ router.post("/register", (req, res) => {
 
   // Create new user
   const newUser = new User(
-    users.length + 1,
+      User.users.length + 1,
     firstName,
     lastName,
     street,
@@ -99,11 +52,7 @@ router.post("/register", (req, res) => {
     phonenumber
   );
 
-  // TODO: Implementation
-  // Create token
-  // newUser.token = crypto.createHash('sha256').update(JSON.stringify(newUser)).digest('hex');
-
-  users.push(newUser);
+    User.users.push(newUser);
 
   res.status(201).json({
     status: "201",
@@ -140,14 +89,14 @@ router.get("/user", (req, res) => {
       data: {},
     });
   } else if (Object.keys(req.query).length === 0) {
+      const sanitizedUsers = User.users.map(({password, ...rest}) => ({...rest}));
     res.status(200).json({
       status: "200",
       message: "Success",
-      //FIX: Shows (soon token) and password
-      data: users,
+      data: sanitizedUsers,
     });
   } else {
-    const filteredUsers = users.filter((user) => {
+    const filteredUsers = User.users.filter((user) => {
       let matchesFilters = true;
       for (const key in req.query) {
         const queryValue = req.query[key];
@@ -174,11 +123,11 @@ router.get("/user", (req, res) => {
         data: {},
       });
     } else {
+        const sanitizedFilteredUsers = filteredUsers.map(({password, ...rest}) => ({...rest}));
       res.status(200).json({
         status: "200",
         message: "Success",
-        //FIX: Shows (soon token) and password
-        data: filteredUsers,
+        data: sanitizedFilteredUsers,
       });
     }
   }
@@ -186,16 +135,19 @@ router.get("/user", (req, res) => {
 
 // UC-203 /api/user/:userId
 router.get("/user/profile", (req, res) => {
-  //TODO: get user from token
-  res.send("profile");
+  res.status(501).json({
+    status: "501",
+    message: "Not implemented",
+    data: {},
+  });
 });
 
 router.route("/user/:userId")
   // UC-204 /api/user/:userId
-    // TODO: get more details with token corresponding to userId
   .get((req, res) => {
     const userId = parseInt(req.params.userId);
-    const user = users.find((user) => user.id === userId);
+    const user = User.users.find((user) => user.id === userId);
+    const {password, ...sanitizedUser} = user;
     if (!user) {
         res.status(404).json({
             status: "404",
@@ -206,15 +158,14 @@ router.route("/user/:userId")
         res.status(200).json({
             status: "200",
             message: "Success",
-          //FIX: Shows (soon token) and password for user that does not have same token
-            data: user,
+            data: sanitizedUser,
         });
     }
   })
   // UC-205 /api/user/:userId
   .put((req, res) => {
       const userId = parseInt(req.params.userId);
-      const editUser = users.find((user) => user.id === userId);
+      const editUser = User.users.find((user) => user.id === userId);
       const { firstName, lastName, street, city, email, password, phonenumber } =
           req.body;
       if (
@@ -231,7 +182,6 @@ router.route("/user/:userId")
           status: "400",
           message: "Missing required fields or user not found",
         });
-      //TODO: Check token before editing
       } else {
         editUser.firstName = firstName;
         editUser.lastName = lastName;
@@ -251,19 +201,19 @@ router.route("/user/:userId")
   // UC-206 /api/user/:userId
   .delete((req, res) => {
     const userId = parseInt(req.params.userId);
-    const deleteUser = users.find((user) => user.id === userId);
+    const deleteUser = User.users.find((user) => user.id === userId);
+    const {password, ...sanitizedUser} = deleteUser;
     if (!deleteUser) {
         return res.status(400).json({
             status: "400",
             message: "User not found",
         });
     } else {
-        users.splice(users.indexOf(deleteUser), 1);
+        User.users.splice(User.users.indexOf(deleteUser), 1);
         res.status(201).json({
             status: "201",
             message: "User deleted",
-          //FIX: Shows (soon token) and password for user that does not have same token
-            data: deleteUser,
+            data: sanitizedUser,
         });
     }
   });
