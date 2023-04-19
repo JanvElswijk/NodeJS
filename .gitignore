@@ -104,4 +104,4 @@ dist
 .tern-port
 
 # .idea folder
-./TT1/.idea
+/TT1/.idea
