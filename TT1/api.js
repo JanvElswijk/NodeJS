@@ -4,6 +4,35 @@ const { User, users } = require("./user");
 
 const bodyParser = require("body-parser");
 
+const checkAuth = (req, res, next) => {
+    if (!req.headers.authorization) {
+        res.status(401).json({
+            status: "401",
+            message: "Unauthorized, no authentication token provided",
+            data: {}
+        });
+    }
+
+    const authToken = req.headers.authorization;
+
+    // Check if the authentication token is valid
+    const accessToken = authToken.split(' ')[1]; // Extract access token from Authorization header
+
+    const user = users.find((user) => user.token === accessToken);
+
+    if (!user) {
+        res.status(401).json({
+            status: "401",
+            message: "Unauthorized, invalid authentication token provided",
+            data: {}
+        });
+    } else {
+        // Add the user object to the request object
+        req.user = user;
+        next();
+    }
+};
+
 router.use(bodyParser.json());
 
 // UC-201 /api/register
@@ -28,7 +57,10 @@ router.post("/register", (req, res) => {
     }
 
     // Create new user
-    const newUser = new User(users.length + 1, firstName, lastName, street, city, true, email, password, phoneNumber);
+    const newUser = new User(null, users.length + 1, firstName, lastName, street, city, true, email, password, phoneNumber);
+    newUser.token = crypto.createHash('sha256')
+        .update(JSON.stringify(newUser))
+        .digest('hex');
 
     users.push(newUser);
 
@@ -68,7 +100,7 @@ router.get("/user", (req, res) => {
       data: {},
     });
   } else if (Object.keys(req.query).length === 0) {
-      const sanitizedUsers = users.map(({password, ...rest}) => ({...rest}));
+      const sanitizedUsers = users.map(({password, token, ...rest}) => ({...rest}));
       console.log('(/api/user no filter) ' + sanitizedUsers.length + ' users found')
     res.status(200).json({
       status: "200",
@@ -108,7 +140,7 @@ router.get("/user", (req, res) => {
         data: {},
       });
     } else {
-        const sanitizedFilteredUsers = filteredUsers.map(({password, ...rest}) => ({...rest}));
+        const sanitizedFilteredUsers = filteredUsers.map(({password, token, ...rest}) => ({...rest}));
         console.log('(/api/user w/ filter) ' + sanitizedFilteredUsers.length + ' users found')
       res.status(200).json({
         status: "200",
@@ -120,56 +152,41 @@ router.get("/user", (req, res) => {
 });
 
 // UC-203 /api/user/profile
-router.get("/user/profile", (req, res) => {
-    console.log('(/api/user/profile) profile not implemented')
-  res.status(501).json({
-    status: "501",
-    message: "Not implemented, profile not yet visible",
-    data: {},
-  });
+router.get("/user/profile", checkAuth, (req, res) => {
+    const { user } = req;
+    res.status(200).json({
+        status: "200",
+        message: "Success, user profile found",
+        data: user,
+    });
 });
 
 router.route("/user/:userId")
-  // UC-204 /api/user/:userId
-  .get((req, res) => {
-    const userId = parseInt(req.params.userId);
-    const user = users.find((user) => user.id === userId);
-    const {password, ...sanitizedUser} = user;
-    if (!user) {
-        console.log('(/api/user/:userId GET) no user with id ' + userId + ' found')
-        res.status(404).json({
-            status: "404",
-            message: "User not found, no user with that id",
-            data: {},
-        });
-    } else {
-        console.log('(/api/user/:userId GET) user with id ' + userId + ' found')
-        res.status(200).json({
-            status: "200",
-            message: "Success, user with " + sanitizedUser.id + " found",
-            data: sanitizedUser,
-        });
-    }
-  })
-  // UC-205 /api/user/:userId
+    .get((req, res) => {
+        const userId = parseInt(req.params.userId);
+        const user = users.find((user) => user.id === userId);
+        let userAuth = false;
+        if (req.headers.authorization) {
+            const authToken = req.headers.authorization.split(' ')[1];
+            userAuth = users.find((user) => user.token === authToken);
+        }
+        if (!user) return res.status(404).json({status: "404", message: "User not found, no user with that id", data: {}});
+        else if (userAuth) return res.status(200).json({status: "200", message: "Success, user with id " + user.id + " found", data: user});
+        else {
+            const { password, token, ...sanitizedUser } = user;
+            return res.status(200).json({status: "200", message: "Success, user with id " + sanitizedUser.id + " found", data: sanitizedUser});
+        }
+    })
     .put((req, res) => {
         const userId = parseInt(req.params.userId);
         const editUser = users.find((user) => user.id === userId);
-        const {firstName, lastName, street, city, email, password, phoneNumber} =
-            req.body;
-        if (!email || !editUser) {
-            console.log('(/api/user/:userId PUT) missing required fields or user not found')
-            return res.status(400).json({
-                status: "400",
-                message: "Missing required fields or user not found, edit failed",
-            });
-        } else if (users.find((user) => user.email === email && user.id !== userId)) {
-            console.log('(/api/user/:userId PUT) email already exists')
-            return res.status(409).json({
-                status: "409",
-                message: "Email already exists, edit failed",
-            });
-        } else {
+        if (!req.headers.authorization) return res.status(401).json({status: "401", message: "User not authorized, edit failed", data: {}});
+        const userAuth = editUser.token === req.headers.authorization.split(' ')[1];
+        if (!userAuth) return res.status(401).json({status: "401", message: "User not authorized, edit failed", data: {}});
+        const {firstName, lastName, street, city, email, password, phoneNumber} = req.body;
+        if (!email || !editUser) return res.status(400).json({status: "400", message: "Missing required fields or user not found, edit failed", data: {}});
+        else if (users.find((user) => user.email === email && user.id !== userId)) return res.status(409).json({status: "409", message: "Email already exists, edit failed", data: {}});
+        else {
             editUser.firstName = firstName || editUser.firstName;
             editUser.lastName = lastName || editUser.lastName;
             editUser.street = street || editUser.street;
@@ -177,34 +194,19 @@ router.route("/user/:userId")
             editUser.email = email;
             editUser.password = password || editUser.password;
             editUser.phoneNumber = phoneNumber || editUser.phoneNumber;
-            console.log('(/api/user/:userId PUT) ' + editUser.firstName + " " + editUser.lastName + " edited")
-            res.status(201).json({
-                status: "201",
-                message: "User successfully edited",
-                data: editUser,
-            });
+            return res.status(201).json({status: "201", message: "User successfully edited", data: editUser});
         }
     })
-  // UC-206 /api/user/:userId
-  .delete((req, res) => {
-    const userId = parseInt(req.params.userId);
-    const deleteUser = users.find((user) => user.id === userId);
-    const {password, ...sanitizedUser} = deleteUser;
-    if (!deleteUser) {
-        console.log('(/api/user/:userId DELETE) user not found')
-        return res.status(400).json({
-            status: "400",
-            message: "User not found, delete failed",
-        });
-    } else {
-        console.log('/api/user/:userId DELETE) ' + deleteUser.firstName + " " + deleteUser.lastName + " deleted")
-        users.splice(users.indexOf(deleteUser), 1);
-        res.status(201).json({
-            status: "201",
-            message: "Deletion successful, " + sanitizedUser.firstName + " " + sanitizedUser.lastName + " deleted",
-            data: sanitizedUser,
-        });
-    }
-  });
-
+    .delete((req, res) => {
+        const userId = parseInt(req.params.userId);
+        const deleteUser = users.find((user) => user.id === userId);
+        if (!req.headers.authorization) return res.status(401).json({status: "401", message: "User not authorized, delete failed", data: {}});
+        const userAuth = deleteUser.token === req.headers.authorization.split(' ')[1];
+        if (!userAuth) return res.status(401).json({status: "401", message: "User not authorized, delete failed", data: {}});
+        if (!deleteUser) return res.status(400).json({status: "400", message: "User not found, delete failed", data: {}});
+        else {
+            users.splice(users.indexOf(deleteUser), 1);
+            return res.status(201).json({status: "201", message: "Deletion successful, " + deleteUser.firstName + " " + deleteUser.lastName + " deleted", data: deleteUser});
+        }
+    });
     module.exports = router;
