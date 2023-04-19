@@ -12,9 +12,7 @@ class User {
     }
 }
 
-
-module.exports = User;
-module.exports.users = [
+const users = [
     new User(
         1,
         "John",
@@ -60,3 +58,5 @@ module.exports.users = [
         "0612345678"
     ),
 ];
+
+module.exports = { User, users };

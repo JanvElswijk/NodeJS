@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const User = require("./user");
+const { User, users } = require("./user");
 //TODO: Shit's broke, can't request newly registered users
 
 const bodyParser = require("body-parser");
@@ -9,64 +9,45 @@ router.use(bodyParser.json());
 
 // UC-201 /api/register
 router.post("/register", (req, res) => {
-  const { firstName, lastName, street, city, email, password, phonenumber } =
-    req.body;
+    const { firstName, lastName, street, city, email, password, phoneNumber } = req.body;
 
-  // Check if all fields are present and not empty
-  if (
-    !firstName ||
-    !lastName ||
-    !street ||
-    !city ||
-    !email ||
-    !password ||
-    !phonenumber
-  ) {
-    return res.status(400).json({
-      status: "400",
-      message: "Missing required fields",
-    });
-  }
+    // Check if all fields are present and not empty
+    if (!firstName || !lastName || !street || !city || !email || !password || !phoneNumber) {
+        return res.status(400).json({
+            status: "400",
+            message: "Missing required fields",
+        });
+    }
 
-  // Check if email is unique
-  const existingUser = User.users.find((user) => user.email === email);
-  if (existingUser) {
-    return res.status(409).json({
-      status: "409",
-      message: "Email already exists",
-    });
-  }
+    // Check if email is unique
+    const existingUser = users.find((user) => user.email === email);
+    if (existingUser) {
+        return res.status(409).json({
+            status: "409",
+            message: "Email already exists",
+        });
+    }
 
-  // Create new user
-  const newUser = new User(
-      User.users.length + 1,
-    firstName,
-    lastName,
-    street,
-    city,
-    true,
-    email,
-    password,
-    phonenumber
-  );
+    // Create new user
+    const newUser = new User(users.length + 1, firstName, lastName, street, city, true, email, password, phoneNumber);
 
-    User.users.push(newUser);
+    users.push(newUser);
 
-  res.status(201).json({
-    status: "201",
-    message: "User created",
-    data: newUser,
+    res.status(201).json({
+        status: "201",
+        message: "User created",
+        data: newUser,
   });
 
   /* Test user
     {
-        "firstName": "Jam",
+        "firstName": "Jan",
         "lastName": "van Elswijk",
         "street": "de Polderstraat 66",
         "city": "Heijningen",
         "email": "jan@avans.nl",
         "password": "1234",
-        "phonenumber": "0612345678"
+        "phoneNumber": "0612345678"
     }
      */
 });
@@ -81,41 +62,46 @@ router.get("/user", (req, res) => {
   );
 
   if (invalidFields.length > 0) {
+      console.log('invalidFields.length > 0')
     res.status(404).json({
       status: "404",
       message: "No users found",
       data: {},
     });
   } else if (Object.keys(req.query).length === 0) {
-      const sanitizedUsers = User.users.map(({password, ...rest}) => ({...rest}));
+      const sanitizedUsers = users.map(({password, ...rest}) => ({...rest}));
     res.status(200).json({
       status: "200",
       message: "Success",
       data: sanitizedUsers,
     });
   } else {
-      // Implementation doesn't update when new user is added
-    const filteredUsers = User.users.filter((user) => {
-      let matchesFilters = true;
-      for (const key in req.query) {
-        const queryValue = req.query[key];
-        const userValue = user[key];
+      const filterUsers = (users, filters) => {
+          return users.filter((user) => {
+              let matchesFilters = true;
+              for (const key in filters) {
+                  const queryValue = filters[key];
+                  const userValue = user[key];
 
-        if (typeof userValue === "boolean") {
-          if (queryValue !== userValue.toString()) {
-            matchesFilters = false;
-            break;
-          }
-        } else {
-          if (queryValue !== userValue) {
-            matchesFilters = false;
-            break;
-          }
-        }
-      }
-      return matchesFilters;
-    });
+                  if (typeof userValue === "boolean") {
+                      if (queryValue !== userValue.toString()) {
+                          matchesFilters = false;
+                          break;
+                      }
+                  } else {
+                      if (queryValue !== userValue) {
+                          matchesFilters = false;
+                          break;
+                      }
+                  }
+              }
+              return matchesFilters;
+          });
+      };
+      const filters = req.query;
+      let filteredUsers = filterUsers(users, filters)
     if (filteredUsers.length === 0) {
+        console.log('filteredUsers is empty')
       res.status(404).json({
         status: "404",
         message: "No users found",
@@ -145,7 +131,7 @@ router.route("/user/:userId")
   // UC-204 /api/user/:userId
   .get((req, res) => {
     const userId = parseInt(req.params.userId);
-    const user = User.users.find((user) => user.id === userId);
+    const user = users.find((user) => user.id === userId);
     const {password, ...sanitizedUser} = user;
     if (!user) {
         res.status(404).json({
@@ -164,8 +150,8 @@ router.route("/user/:userId")
   // UC-205 /api/user/:userId
   .put((req, res) => {
       const userId = parseInt(req.params.userId);
-      const editUser = User.users.find((user) => user.id === userId);
-      const { firstName, lastName, street, city, email, password, phonenumber } =
+      const editUser = users.find((user) => user.id === userId);
+      const { firstName, lastName, street, city, email, password, phoneNumber } =
           req.body;
       if (
           !firstName ||
@@ -174,7 +160,7 @@ router.route("/user/:userId")
           !city ||
           !email ||
           !password ||
-          !phonenumber ||
+          !phoneNumber ||
           !editUser
       ) {
         return res.status(400).json({
@@ -188,7 +174,7 @@ router.route("/user/:userId")
         editUser.city = city;
         editUser.email = email;
         editUser.password = password;
-        editUser.phoneNumber = phonenumber;
+        editUser.phoneNumber = phoneNumber;
         console.log(editUser.firstName + " " + editUser.lastName)
         res.status(201).json({
           status: "201",
@@ -200,7 +186,7 @@ router.route("/user/:userId")
   // UC-206 /api/user/:userId
   .delete((req, res) => {
     const userId = parseInt(req.params.userId);
-    const deleteUser = User.users.find((user) => user.id === userId);
+    const deleteUser = users.find((user) => user.id === userId);
     const {password, ...sanitizedUser} = deleteUser;
     if (!deleteUser) {
         return res.status(400).json({
@@ -208,7 +194,7 @@ router.route("/user/:userId")
             message: "User not found",
         });
     } else {
-        User.users.splice(User.users.indexOf(deleteUser), 1);
+        users.splice(users.indexOf(deleteUser), 1);
         res.status(201).json({
             status: "201",
             message: "User deleted",
