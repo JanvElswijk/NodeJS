@@ -45,7 +45,7 @@ const users = [
         "Doe",
         "Main Street 3",
         "New York",
-        true,
+        false,
         "jack@avans.nl",
         "1234",
         "0612345678"
@@ -57,7 +57,7 @@ const users = [
         "Doe",
         "Main Street 4",
         "New York",
-        true,
+        false,
         "jill@avans.nl",
         "1234",
         "0612345678"

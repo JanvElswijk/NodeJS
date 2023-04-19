@@ -5,6 +5,21 @@ const crypto = require('crypto');
 
 const bodyParser = require("body-parser");
 
+function validatePassword(password) {
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&+-=[\]{};':"\\|,.<>\/?]{8,}$/;
+    return regex.test(password);
+}
+
+function validateEmail(email) {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+}
+
+function validatePhoneNumber(phoneNumber) {
+    const regex = /^\d{10}$/;
+    return regex.test(phoneNumber);
+}
+
 const checkAuth = (req, res, next) => {
     if (!req.headers.authorization) {
         res.status(401).json({
@@ -66,24 +81,70 @@ router.post("/login", (req, res) => {
     });
 });
 
+// UC-102 /api/info
+router.get("/info", (req, res) => {
+    res.status(200).json({
+        status: "200",
+        message: "Server info endpoint",
+        data: {
+            studentName: "Jan van Elswijk",
+            studentNumber: "2200971",
+            description: "Dit is een express server voor het vak Programmeren 4",
+        },
+    });
+});
+
+
 // UC-201 /api/register
 router.post("/register", (req, res) => {
-    const { firstName, lastName, street, city, email, password, phoneNumber } = req.body;
+    const {
+        firstName,
+        lastName,
+        street,
+        city,
+        email,
+        password,
+        phoneNumber
+    } = req.body;
 
-    // Check if all fields are present and not empty
-    if (!firstName || !lastName || !street || !city || !email || !password || !phoneNumber) {
+    if (
+        !firstName ||
+        !lastName ||
+        !street ||
+        !city ||
+        !email ||
+        !password ||
+        !phoneNumber
+    ) {
         return res.status(400).json({
             status: "400",
             message: "Missing required fields for registration",
+            data: {},
         });
     }
 
-    // Check if email is unique
+    if (!validatePassword(password)) {
+        return res.status(400).json({
+            status: "400",
+            message: "Password is not valid, registration failed",
+            data: {},
+        });
+    }
+
+    if (!validateEmail(email)) {
+        return res.status(400).json({
+            status: "400",
+            message: "Email is not valid, registration failed",
+            data: {},
+        });
+    }
+
     const existingUser = users.find((user) => user.email === email);
     if (existingUser) {
-        return res.status(409).json({
-            status: "409",
+        return res.status(403).json({
+            status: "403",
             message: "Email already exists, registration failed",
+            data: {},
         });
     }
 
@@ -99,87 +160,59 @@ router.post("/register", (req, res) => {
         status: "201",
         message: "New user registered",
         data: newUser,
-  });
-
-  /* Test user
-    {
-        "firstName": "Jan",
-        "lastName": "van Elswijk",
-        "street": "de Polderstraat 66",
-        "city": "Heijningen",
-        "email": "jan@avans.nl",
-        "password": "1234",
-        "phoneNumber": "0612345678"
-    }
-     */
+    });
 });
 
 // UC-202 /api/user
 // UC-202 /api/user?field1=:value1&field2=:value
 router.get("/user", (req, res) => {
-  const validFields = Object.keys(new User());
+    const { query } = req;
 
-  const invalidFields = Object.keys(req.query).filter(
-    (key) => !validFields.includes(key)
-  );
+    if (Object.keys(query).length === 0) {
+        const sanitizedUsers = users.map(({ password, ...rest }) => ({ ...rest }));
 
-  if (invalidFields.length > 0) {
-      console.log(`(/api/user w/ filter) invalidFields.length > 0`)
-    res.status(404).json({
-      status: "404",
-      message: "No users found, invalid fields: " + invalidFields.join(", "),
-      data: {},
-    });
-  } else if (Object.keys(req.query).length === 0) {
-      const sanitizedUsers = users.map(({password, token, ...rest}) => ({...rest}));
-      console.log('(/api/user no filter) ' + sanitizedUsers.length + ' users found')
-    res.status(200).json({
-      status: "200",
-      message: "Success, no filters applied",
-      data: sanitizedUsers,
-    });
-  } else {
-      const filterUsers = (users, filters) => {
-          return users.filter((user) => {
-              let matchesFilters = true;
-              for (const key in filters) {
-                  const queryValue = filters[key];
-                  const userValue = user[key];
-
-                  if (typeof userValue === "boolean") {
-                      if (queryValue !== userValue.toString()) {
-                          matchesFilters = false;
-                          break;
-                      }
-                  } else {
-                      if (queryValue !== userValue) {
-                          matchesFilters = false;
-                          break;
-                      }
-                  }
-              }
-              return matchesFilters;
-          });
-      };
-      const filters = req.query;
-      let filteredUsers = filterUsers(users, filters)
-    if (filteredUsers.length === 0) {
-        console.log('(/api/user w/ filter) filteredUsers is empty')
-      res.status(404).json({
-        status: "404",
-        message: "No users found",
-        data: {},
-      });
+        res.status(200).json({
+            status: "200",
+            message: "Success, no filters applied",
+            data: sanitizedUsers,
+        });
     } else {
-        const sanitizedFilteredUsers = filteredUsers.map(({password, token, ...rest}) => ({...rest}));
-        console.log('(/api/user w/ filter) ' + sanitizedFilteredUsers.length + ' users found')
-      res.status(200).json({
-        status: "200",
-        message: "Success, filters applied",
-        data: sanitizedFilteredUsers,
-      });
+        const filterUsers = (users, filters) => {
+            return users.filter((user) => {
+                for (const key in filters) {
+                    const queryValue = filters[key];
+                    const userValue = user[key];
+
+                    if (typeof userValue === "boolean") {
+                        if (queryValue !== userValue.toString()) {
+                            return false;
+                        }
+                    } else {
+                        if (queryValue !== userValue) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            });
+        };
+        const filteredUsers = filterUsers(users, query);
+
+        if (filteredUsers.length === 0) {
+            res.status(200).json({
+                status: "200",
+                message: "Success, filters applied",
+                data: {},
+            });
+        } else {
+            const sanitizedFilteredUsers = filteredUsers.map(({ password, ...rest }) => ({ ...rest }));
+            res.status(200).json({
+                status: "200",
+                message: "Success, filters applied",
+                data: sanitizedFilteredUsers,
+            });
+        }
     }
-  }
 });
 
 // UC-203 /api/user/profile
