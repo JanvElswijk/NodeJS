@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const { User, users } = require("./user");
-//TODO: Shit's broke, can't request newly registered users
 
 const bodyParser = require("body-parser");
 
