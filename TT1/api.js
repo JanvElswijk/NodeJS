@@ -151,7 +151,7 @@ router.route("/user/:userId")
   .put((req, res) => {
       const userId = parseInt(req.params.userId);
       const editUser = users.find((user) => user.id === userId);
-      const { firstName, lastName, street, city, email, password, phoneNumber } =
+      const {firstName, lastName, street, city, email, password, phoneNumber} =
           req.body;
       if (
           !firstName ||
@@ -163,10 +163,15 @@ router.route("/user/:userId")
           !phoneNumber ||
           !editUser
       ) {
-        return res.status(400).json({
-          status: "400",
-          message: "Missing required fields or user not found",
-        });
+          return res.status(400).json({
+              status: "400",
+              message: "Missing required fields or user not found",
+          });
+      } else if (users.find((user) => user.email === email)) {
+          return res.status(409).json({
+              status: "409",
+              message: "Email already exists",
+          });
       } else {
         editUser.firstName = firstName;
         editUser.lastName = lastName;
