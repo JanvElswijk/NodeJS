@@ -14,7 +14,7 @@ router.post("/register", (req, res) => {
     if (!firstName || !lastName || !street || !city || !email || !password || !phoneNumber) {
         return res.status(400).json({
             status: "400",
-            message: "Missing required fields",
+            message: "Missing required fields for registration",
         });
     }
 
@@ -23,7 +23,7 @@ router.post("/register", (req, res) => {
     if (existingUser) {
         return res.status(409).json({
             status: "409",
-            message: "Email already exists",
+            message: "Email already exists, registration failed",
         });
     }
 
@@ -34,7 +34,7 @@ router.post("/register", (req, res) => {
 
     res.status(201).json({
         status: "201",
-        message: "User created",
+        message: "New user registered",
         data: newUser,
   });
 
@@ -61,17 +61,18 @@ router.get("/user", (req, res) => {
   );
 
   if (invalidFields.length > 0) {
-      console.log('invalidFields.length > 0')
+      console.log(`(/api/user w/ filter) invalidFields.length > 0`)
     res.status(404).json({
       status: "404",
-      message: "No users found",
+      message: "No users found, invalid fields: " + invalidFields.join(", "),
       data: {},
     });
   } else if (Object.keys(req.query).length === 0) {
       const sanitizedUsers = users.map(({password, ...rest}) => ({...rest}));
+      console.log('(/api/user no filter) ' + sanitizedUsers.length + ' users found')
     res.status(200).json({
       status: "200",
-      message: "Success",
+      message: "Success, no filters applied",
       data: sanitizedUsers,
     });
   } else {
@@ -100,7 +101,7 @@ router.get("/user", (req, res) => {
       const filters = req.query;
       let filteredUsers = filterUsers(users, filters)
     if (filteredUsers.length === 0) {
-        console.log('filteredUsers is empty')
+        console.log('(/api/user w/ filter) filteredUsers is empty')
       res.status(404).json({
         status: "404",
         message: "No users found",
@@ -108,9 +109,10 @@ router.get("/user", (req, res) => {
       });
     } else {
         const sanitizedFilteredUsers = filteredUsers.map(({password, ...rest}) => ({...rest}));
+        console.log('(/api/user w/ filter) ' + sanitizedFilteredUsers.length + ' users found')
       res.status(200).json({
         status: "200",
-        message: "Success",
+        message: "Success, filters applied",
         data: sanitizedFilteredUsers,
       });
     }
@@ -119,9 +121,10 @@ router.get("/user", (req, res) => {
 
 // UC-203 /api/user/profile
 router.get("/user/profile", (req, res) => {
+    console.log('(/api/user/profile) profile not implemented')
   res.status(501).json({
     status: "501",
-    message: "Not implemented",
+    message: "Not implemented, profile not yet visible",
     data: {},
   });
 });
@@ -133,59 +136,54 @@ router.route("/user/:userId")
     const user = users.find((user) => user.id === userId);
     const {password, ...sanitizedUser} = user;
     if (!user) {
+        console.log('(/api/user/:userId GET) no user with id ' + userId + ' found')
         res.status(404).json({
             status: "404",
-            message: "User not found",
+            message: "User not found, no user with that id",
             data: {},
         });
     } else {
+        console.log('(/api/user/:userId GET) user with id ' + userId + ' found')
         res.status(200).json({
             status: "200",
-            message: "Success",
+            message: "Success, user with " + sanitizedUser.id + " found",
             data: sanitizedUser,
         });
     }
   })
   // UC-205 /api/user/:userId
-  .put((req, res) => {
-      const userId = parseInt(req.params.userId);
-      const editUser = users.find((user) => user.id === userId);
-      const {firstName, lastName, street, city, email, password, phoneNumber} =
-          req.body;
-      if (
-          !firstName ||
-          !lastName ||
-          !street ||
-          !city ||
-          !email ||
-          !password ||
-          !phoneNumber ||
-          !editUser
-      ) {
-          return res.status(400).json({
-              status: "400",
-              message: "Missing required fields or user not found",
-          });
-      } else if (users.find((user) => user.email === email)) {
-          return res.status(409).json({
-              status: "409",
-              message: "Email already exists",
-          });
-      } else {
-        editUser.firstName = firstName;
-        editUser.lastName = lastName;
-        editUser.street = street;
-        editUser.city = city;
-        editUser.email = email;
-        editUser.password = password;
-        editUser.phoneNumber = phoneNumber;
-        console.log(editUser.firstName + " " + editUser.lastName)
-        res.status(201).json({
-          status: "201",
-          message: "User edited",
-          data: editUser,
-        });
-      }
+    .put((req, res) => {
+        const userId = parseInt(req.params.userId);
+        const editUser = users.find((user) => user.id === userId);
+        const {firstName, lastName, street, city, email, password, phoneNumber} =
+            req.body;
+        if (!email || !editUser) {
+            console.log('(/api/user/:userId PUT) missing required fields or user not found')
+            return res.status(400).json({
+                status: "400",
+                message: "Missing required fields or user not found, edit failed",
+            });
+        } else if (users.find((user) => user.email === email && user.id !== userId)) {
+            console.log('(/api/user/:userId PUT) email already exists')
+            return res.status(409).json({
+                status: "409",
+                message: "Email already exists, edit failed",
+            });
+        } else {
+            editUser.firstName = firstName || editUser.firstName;
+            editUser.lastName = lastName || editUser.lastName;
+            editUser.street = street || editUser.street;
+            editUser.city = city || editUser.city;
+            editUser.email = email;
+            editUser.password = password || editUser.password;
+            editUser.phoneNumber = phoneNumber || editUser.phoneNumber;
+            console.log('(/api/user/:userId PUT) ' + editUser.firstName + " " + editUser.lastName + " edited")
+            res.status(201).json({
+                status: "201",
+                message: "User successfully edited",
+                data: editUser,
+            });
+        }
     })
   // UC-206 /api/user/:userId
   .delete((req, res) => {
@@ -193,15 +191,17 @@ router.route("/user/:userId")
     const deleteUser = users.find((user) => user.id === userId);
     const {password, ...sanitizedUser} = deleteUser;
     if (!deleteUser) {
+        console.log('(/api/user/:userId DELETE) user not found')
         return res.status(400).json({
             status: "400",
-            message: "User not found",
+            message: "User not found, delete failed",
         });
     } else {
+        console.log('/api/user/:userId DELETE) ' + deleteUser.firstName + " " + deleteUser.lastName + " deleted")
         users.splice(users.indexOf(deleteUser), 1);
         res.status(201).json({
             status: "201",
-            message: "User deleted",
+            message: "Deletion successful, " + sanitizedUser.firstName + " " + sanitizedUser.lastName + " deleted",
             data: sanitizedUser,
         });
     }

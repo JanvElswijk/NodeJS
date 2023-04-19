@@ -7,7 +7,8 @@ const api = require('./api');
 
 
 app.all('/', (req, res) => {
-    res.send('Wrong endpoint, use /api');
+    console.log('(/) not a usable endpoint')
+    res.status(404).send('The requested resource could not be found. Please use /api endpoints.');
     });
 
 app.use('/api', api);
