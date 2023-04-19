@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { User, users } = require("./user");
+const crypto = require('crypto');
 
 const bodyParser = require("body-parser");
 
@@ -17,7 +18,7 @@ const checkAuth = (req, res, next) => {
 
     // Check if the authentication token is valid
     const accessToken = authToken.split(' ')[1]; // Extract access token from Authorization header
-
+    console.log(accessToken)
     const user = users.find((user) => user.token === accessToken);
 
     if (!user) {
@@ -34,6 +35,36 @@ const checkAuth = (req, res, next) => {
 };
 
 router.use(bodyParser.json());
+
+// UC-101 /api/login
+router.post("/login", (req, res) => {
+    const { email, password } = req.body;
+
+    // Check if all fields are present and not empty
+    if (!email || !password) {
+        return res.status(400).json({
+            status: "400",
+            message: "Missing required fields for login",
+            data: {},
+        });
+    }
+
+    // Check if email and password are correct
+    const user = users.find((user) => user.email === email && user.password === password);
+    if (!user) {
+        return res.status(401).json({
+            status: "401",
+            message: "Unauthorized, invalid email or password",
+            data: {},
+        });
+    }
+
+    res.status(200).json({
+        status: "200",
+        message: "User logged in",
+        data: user,
+    });
+});
 
 // UC-201 /api/register
 router.post("/register", (req, res) => {
