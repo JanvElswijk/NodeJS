@@ -4,21 +4,8 @@ const { User, users } = require("./user");
 const crypto = require('crypto');
 
 const bodyParser = require("body-parser");
+const validation = require("./validation");
 
-function validatePassword(password) {
-    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&+-=[\]{};':"\\|,.<>\/?]{8,}$/;
-    return regex.test(password);
-}
-
-function validateEmail(email) {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
-}
-
-function validatePhoneNumber(phoneNumber) {
-    const regex = /^\d{10}$/;
-    return regex.test(phoneNumber);
-}
 
 const checkAuth = (token) => {
     return users.find((user) => user.token === token);
@@ -99,7 +86,15 @@ router.post("/register", (req, res) => {
         });
     }
 
-    if (!validatePassword(password)) {
+    if (!validation.validateEmail(email)) {
+        return res.status(400).json({
+            status: "400",
+            message: "Email is not valid, registration failed",
+            data: {},
+        });
+    }
+
+    if (!validation.validatePassword(password)) {
         return res.status(400).json({
             status: "400",
             message: "Password is not valid, registration failed",
@@ -107,10 +102,10 @@ router.post("/register", (req, res) => {
         });
     }
 
-    if (!validateEmail(email)) {
+    if (!validation.validatePhoneNumber(phoneNumber)) {
         return res.status(400).json({
             status: "400",
-            message: "Email is not valid, registration failed",
+            message: "Phone number is not valid, registration failed",
             data: {},
         });
     }
@@ -263,8 +258,51 @@ router.route("/user/:userId")
 
         if (!validatePhoneNumber(phoneNumber)) return res.status(400).json({status: "400", message: "Phone number is not valid, edit failed", data: {}});
 
+        if (!validation.validateEmail(email)) {
+            return res.status(400).json({
+                status: "400",
+                message: "Email is not valid, edit failed",
+                data: {},
+            });
+        }
         else if (users.find((user) => user.email === email && user.id !== userId)) return res.status(409).json({status: "409", message: "Email already exists, edit failed", data: {}});
 
+        if (!validation.validatePassword(password)) {
+            return res.status(400).json({
+                status: "400",
+                message: "Password is not valid, edit failed",
+                data: {},
+            });
+        }
+
+        if (!validation.validatePhoneNumber(phoneNumber)) {
+            return res.status(400).json({
+                status: "400",
+                message: "Phone number is not valid, edit failed",
+                data: {},
+            });
+        }
+
+        if (users.find(user => user.email === email && user.id !== userId)) {
+            return res.status(409).json({
+                status: "409",
+                message: "Email already exists, edit failed",
+                data: {},
+            });
+        }
+        editUser.firstName = firstName || editUser.firstName;
+        editUser.lastName = lastName || editUser.lastName;
+        editUser.street = street || editUser.street;
+        editUser.city = city || editUser.city;
+        editUser.email = email;
+        editUser.password = password || editUser.password;
+        editUser.phoneNumber = phoneNumber || editUser.phoneNumber;
+
+        res.status(200).json({
+            status: "200",
+            message: "User successfully edited",
+            data: editUser,
+        });
         else {
             editUser.firstName = firstName || editUser.firstName;
             editUser.lastName = lastName || editUser.lastName;
