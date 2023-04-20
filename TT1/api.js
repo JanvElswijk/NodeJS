@@ -3,21 +3,8 @@ const router = express.Router();
 const { User, users } = require("./user");
 
 const bodyParser = require("body-parser");
+const validation = require("./validation");
 
-function validatePassword(password) {
-    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&+-=[\]{};':"\\|,.<>\/?]{8,}$/;
-    return regex.test(password);
-}
-
-function validateEmail(email) {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
-}
-
-function validatePhoneNumber(phoneNumber) {
-    const regex = /^\d{10}$/;
-    return regex.test(phoneNumber);
-}
 
 router.use(bodyParser.json());
 
@@ -63,7 +50,15 @@ router.post("/register", (req, res) => {
         });
     }
 
-    if (!validatePassword(password)) {
+    if (!validation.validateEmail(email)) {
+        return res.status(400).json({
+            status: "400",
+            message: "Email is not valid, registration failed",
+            data: {},
+        });
+    }
+
+    if (!validation.validatePassword(password)) {
         return res.status(400).json({
             status: "400",
             message: "Password is not valid, registration failed",
@@ -71,10 +66,10 @@ router.post("/register", (req, res) => {
         });
     }
 
-    if (!validateEmail(email)) {
+    if (!validation.validatePhoneNumber(phoneNumber)) {
         return res.status(400).json({
             status: "400",
-            message: "Email is not valid, registration failed",
+            message: "Phone number is not valid, registration failed",
             data: {},
         });
     }
@@ -213,8 +208,23 @@ router.route("/user/:userId")
             });
         }
 
-        if (!validatePhoneNumber(phoneNumber)) {
+        if (!validation.validateEmail(email)) {
+            return res.status(400).json({
+                status: "400",
+                message: "Email is not valid, edit failed",
+                data: {},
+            });
+        }
 
+        if (!validation.validatePassword(password)) {
+            return res.status(400).json({
+                status: "400",
+                message: "Password is not valid, edit failed",
+                data: {},
+            });
+        }
+
+        if (!validation.validatePhoneNumber(phoneNumber)) {
             return res.status(400).json({
                 status: "400",
                 message: "Phone number is not valid, edit failed",

@@ -1,4 +1,3 @@
-const assert = require('assert');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 
@@ -74,7 +73,7 @@ describe('Userid', () => {
             .send({
                 "firstName": "Test",
                 "lastName": "Test",
-                "password": "Test",
+                "password": "Testtest1!",
                 "email": "test@test.test",
                 "phoneNumber": "061234567"
             })
@@ -122,7 +121,7 @@ describe('Userid', () => {
             .send({
                 "firstName": "Test",
                 "lastName": "Test",
-                "password": "Test",
+                "password": "Testtest1!",
                 "email": "test@test.test",
                 "phoneNumber": "0612345678"
             })
