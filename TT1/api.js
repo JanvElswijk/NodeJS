@@ -256,8 +256,6 @@ router.route("/user/:userId")
 
         if (!email) return res.status(400).json({status: "400", message: "Missing required field, email, edit failed", data: {}});
 
-        if (!validatePhoneNumber(phoneNumber)) return res.status(400).json({status: "400", message: "Phone number is not valid, edit failed", data: {}});
-
         if (!validation.validateEmail(email)) {
             return res.status(400).json({
                 status: "400",
@@ -303,16 +301,6 @@ router.route("/user/:userId")
             message: "User successfully edited",
             data: editUser,
         });
-        else {
-            editUser.firstName = firstName || editUser.firstName;
-            editUser.lastName = lastName || editUser.lastName;
-            editUser.street = street || editUser.street;
-            editUser.city = city || editUser.city;
-            editUser.email = email;
-            editUser.password = password || editUser.password;
-            editUser.phoneNumber = phoneNumber || editUser.phoneNumber;
-            return res.status(200).json({status: "200", message: "User successfully edited", data: editUser});
-        }
     })
     .delete((req, res) => {
         const userId = parseInt(req.params.userId);
