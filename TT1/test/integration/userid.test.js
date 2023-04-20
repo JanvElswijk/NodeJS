@@ -1,4 +1,3 @@
-const assert = require('assert');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 
@@ -10,8 +9,20 @@ chai.should();
 
 describe('Userid', () => {
     it('TC-204-1 Ongeldig token', done => {
-        //TODO: implement
-        done();
+        chai
+            .request(app)
+            .get('/api/user/1')
+            .set({"Authorization": `Bearer a`})
+            .end((err, res) => {
+                res.should.have.status(401);
+                res.body.should.be.a('object');
+                res.body.should.have.property('status').eql('401');
+                res.body.should.have.property('message').eql('Unauthorized, invalid token');
+                res.body.should.have.property('data');
+                res.body.data.should.be.empty;
+                done();
+            });
+
     });
     it('TC-204-2 Gebruiker-ID bestaat niet', done => {
         chai
@@ -39,7 +50,7 @@ describe('Userid', () => {
                 res.body.should.have.property('data');
                 res.body.data.should.be.a('object');
                 res.body.data.should.not.have.property('password');
-                // !res.body.data.user.should.have.property('token');
+                res.body.data.should.not.have.property('token');
                 done();
             });
     });
@@ -47,6 +58,7 @@ describe('Userid', () => {
         chai
             .request(app)
             .put('/api/user/1')
+            .set({"Authorization": `Bearer testtoken1`})
             .send({
                 "firstName": "Test",
                 "lastName": "Test",
@@ -64,13 +76,33 @@ describe('Userid', () => {
             });
     });
     it('TC-205-2 De gebruiker is niet de eigenaar van de data', done => {
-        //TODO: implement
-        done();
+        chai
+            .request(app)
+            .put('/api/user/1')
+            .set({"Authorization": `Bearer testtoken2`})
+            .send({
+                "firstName": "Test",
+                "lastName": "Test",
+                "password": "Test",
+                "email": "test@test.test",
+                "phoneNumber": "0612345678"
+            })
+            .end((err, res) => {
+                res.should.have.status(403);
+                res.body.should.be.a('object');
+                res.body.should.have.property('status').eql('403');
+                res.body.should.have.property('message').eql('Forbidden');
+                res.body.should.have.property('data');
+                res.body.data.should.be.a('object');
+                res.body.data.should.be.empty;
+                done();
+            });
     });
     it('TC-205-3 Niet-valide telefoonnummer', done => {
         chai
             .request(app)
             .put('/api/user/1')
+            .set({"Authorization": `Bearer testtoken1`})
             .send({
                 "firstName": "Test",
                 "lastName": "Test",
@@ -112,13 +144,32 @@ describe('Userid', () => {
             });
     });
     it('TC-205-5 Niet ingelogd', done => {
-        //TODO: implement
-        done();
+        chai
+            .request(app)
+            .put('/api/user/1')
+            .send({
+                "firstName": "Test",
+                "lastName": "Test",
+                "password": "Test",
+                "email": "test@test.test",
+                "phoneNumber": "0612345678"
+            })
+            .end((err, res) => {
+                res.should.have.status(401);
+                res.body.should.be.a('object');
+                res.body.should.have.property('status').eql('401');
+                res.body.should.have.property('message').eql('Unauthorized');
+                res.body.should.have.property('data');
+                res.body.data.should.be.a('object');
+                res.body.data.should.be.empty;
+                done();
+            });
     });
     it('TC-205-6 Gebruiker succesvol gewijzigd', done => {
         chai
             .request(app)
             .put('/api/user/1')
+            .set({"Authorization": `Bearer testtoken1`})
             .send({
                 "firstName": "Test",
                 "lastName": "Test",
@@ -156,17 +207,41 @@ describe('Userid', () => {
             });
     });
     it('TC-206-2 Gebruiker is niet ingelogd', done => {
-        //TODO: implement
-        done();
+        chai
+            .request(app)
+            .delete('/api/user/1')
+            .end((err, res) => {
+                res.should.have.status(401);
+                res.body.should.be.a('object');
+                res.body.should.have.property('status').eql('401');
+                res.body.should.have.property('message').eql('Unauthorized');
+                res.body.should.have.property('data');
+                res.body.data.should.be.a('object');
+                res.body.data.should.be.empty;
+                done();
+            });
     });
     it('TC-206-3 Gebruiker is niet de eigenaar van de data', done => {
-        //TODO: implement
-        done();
+        chai
+            .request(app)
+            .delete('/api/user/1')
+            .set({"Authorization": `Bearer testtoken2`})
+            .end((err, res) => {
+                res.should.have.status(403);
+                res.body.should.be.a('object');
+                res.body.should.have.property('status').eql('403');
+                res.body.should.have.property('message').eql('Forbidden');
+                res.body.should.have.property('data');
+                res.body.data.should.be.a('object');
+                res.body.data.should.be.empty;
+                done();
+            });
     });
     it('TC-206-4 Gebruiker succesvol verwijderd', done => {
         chai
             .request(app)
             .delete('/api/user/1')
+            .set({"Authorization": `Bearer testtoken1`})
             .end((err, res) => {
                 res.should.have.status(200);
                 res.body.should.be.a('object');

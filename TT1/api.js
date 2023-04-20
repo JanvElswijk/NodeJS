@@ -20,34 +20,10 @@ function validatePhoneNumber(phoneNumber) {
     return regex.test(phoneNumber);
 }
 
-const checkAuth = (req, res, next) => {
-    if (!req.headers.authorization) {
-        res.status(401).json({
-            status: "401",
-            message: "Unauthorized, no authentication token provided",
-            data: {}
-        });
-    }
+const checkAuth = (token) => {
+    return users.find((user) => user.token === token);
 
-    const authToken = req.headers.authorization;
-
-    // Check if the authentication token is valid
-    const accessToken = authToken.split(' ')[1]; // Extract access token from Authorization header
-    console.log(accessToken)
-    const user = users.find((user) => user.token === accessToken);
-
-    if (!user) {
-        res.status(401).json({
-            status: "401",
-            message: "Unauthorized, invalid authentication token provided",
-            data: {}
-        });
-    } else {
-        // Add the user object to the request object
-        req.user = user;
-        next();
-    }
-};
+}
 
 router.use(bodyParser.json());
 
@@ -216,8 +192,25 @@ router.get("/user", (req, res) => {
 });
 
 // UC-203 /api/user/profile
-router.get("/user/profile", checkAuth, (req, res) => {
-    const { user } = req;
+router.get("/user/profile", (req, res) => {
+    const token = req.headers.authorization.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({
+            status: "401",
+            message: "Unauthorized, no token provided",
+            data: {},
+        });
+    } else if (!checkAuth(token)) {
+        return res.status(401).json({
+            status: "401",
+            message: "Unauthorized",
+            data: {},
+        });
+    }
+
+    const user = users.find((user) => user.token === token);
+
     res.status(200).json({
         status: "200",
         message: "Success, user profile found",
@@ -226,6 +219,19 @@ router.get("/user/profile", checkAuth, (req, res) => {
 });
 
 router.route("/user/:userId")
+    .all((req, res, next) => {
+        if (!req.headers.authorization) {
+            next();
+        } else if (!checkAuth(req.headers.authorization.split(' ')[1])) {
+            return res.status(401).json({
+                status: "401",
+                message: "Unauthorized, invalid token",
+                data: {},
+            });
+        } else {
+            next();
+        }
+    })
     .get((req, res) => {
         const userId = parseInt(req.params.userId);
         const user = users.find((user) => user.id === userId);
@@ -238,18 +244,27 @@ router.route("/user/:userId")
         else if (userAuth) return res.status(200).json({status: "200", message: "Success, user with id " + user.id + " found", data: user});
         else {
             const { password, token, ...sanitizedUser } = user;
-            return res.status(200).json({status: "200", message: "Success, user with id " + sanitizedUser.id + " found", data: sanitizedUser});
+            return res.status(200).json({status: "200", message: "Success, user with that id found", data: sanitizedUser});
         }
     })
     .put((req, res) => {
         const userId = parseInt(req.params.userId);
         const editUser = users.find((user) => user.id === userId);
-        if (!req.headers.authorization) return res.status(401).json({status: "401", message: "User not authorized, edit failed", data: {}});
+
+        if (!editUser) return res.status(404).json({status: "404", message: "User not found, edit failed", data: {}});
+
+        if (!req.headers.authorization) return res.status(401).json({status: "401", message: "Unauthorized", data: {}});
         const userAuth = editUser.token === req.headers.authorization.split(' ')[1];
-        if (!userAuth) return res.status(401).json({status: "401", message: "User not authorized, edit failed", data: {}});
+
+        if (!userAuth) return res.status(403).json({status: "403", message: "Forbidden", data: {}});
         const {firstName, lastName, street, city, email, password, phoneNumber} = req.body;
-        if (!email || !editUser) return res.status(400).json({status: "400", message: "Missing required fields or user not found, edit failed", data: {}});
+
+        if (!email) return res.status(400).json({status: "400", message: "Missing required field, email, edit failed", data: {}});
+
+        if (!validatePhoneNumber(phoneNumber)) return res.status(400).json({status: "400", message: "Phone number is not valid, edit failed", data: {}});
+
         else if (users.find((user) => user.email === email && user.id !== userId)) return res.status(409).json({status: "409", message: "Email already exists, edit failed", data: {}});
+
         else {
             editUser.firstName = firstName || editUser.firstName;
             editUser.lastName = lastName || editUser.lastName;
@@ -258,19 +273,19 @@ router.route("/user/:userId")
             editUser.email = email;
             editUser.password = password || editUser.password;
             editUser.phoneNumber = phoneNumber || editUser.phoneNumber;
-            return res.status(201).json({status: "201", message: "User successfully edited", data: editUser});
+            return res.status(200).json({status: "200", message: "User successfully edited", data: editUser});
         }
     })
     .delete((req, res) => {
         const userId = parseInt(req.params.userId);
         const deleteUser = users.find((user) => user.id === userId);
-        if (!req.headers.authorization) return res.status(401).json({status: "401", message: "User not authorized, delete failed", data: {}});
+        if (!deleteUser) return res.status(404).json({status: "404", message: "User not found, delete failed", data: {}});
+        if (!req.headers.authorization) return res.status(401).json({status: "401", message: "Unauthorized", data: {}});
         const userAuth = deleteUser.token === req.headers.authorization.split(' ')[1];
-        if (!userAuth) return res.status(401).json({status: "401", message: "User not authorized, delete failed", data: {}});
-        if (!deleteUser) return res.status(400).json({status: "400", message: "User not found, delete failed", data: {}});
+        if (!userAuth) return res.status(403).json({status: "403", message: "Forbidden", data: {}});
         else {
             users.splice(users.indexOf(deleteUser), 1);
-            return res.status(201).json({status: "201", message: "Deletion successful, " + deleteUser.firstName + " " + deleteUser.lastName + " deleted", data: deleteUser});
+            return res.status(200).json({status: "200", message: "User successfully deleted", data: deleteUser});
         }
     });
     module.exports = router;
