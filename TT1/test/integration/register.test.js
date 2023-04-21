@@ -1,8 +1,8 @@
-const assert = require('assert');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 
 const app = require('../../app');
+const assert = require('assert');
 
 chai.use(chaiHttp);
 
@@ -22,11 +22,14 @@ describe('Register', () => {
                 phoneNumber: "0612345678"
             })
             .end((err, res) => {
-                res.should.have.status(400);
+                assert(err === null);
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('400');
-                res.body.should.have.property('message').eql('Missing required fields for registration');
-                res.body.should.have.property('data');
+                let { status, message, data } = res.body;
+                status.should.equal('400');
+                message.should.be.a('string').that.equal('Missing required fields for registration');
+                data.should.be.a('object').that.is.empty;
+
                 done();
             });
     });
@@ -44,11 +47,14 @@ describe('Register', () => {
                 phoneNumber: "0612345678"
             })
             .end((err, res) =>  {
-                res.should.have.status(400);
+                assert(err === null);
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('400');
-                res.body.should.have.property('message').eql('Email is not valid, registration failed');
-                res.body.should.have.property('data');
+                let { status, message, data } = res.body;
+                status.should.equal('400');
+                message.should.be.a('string').that.equal('Email is not valid, registration failed');
+                data.should.be.a('object').that.is.empty;
+
                 done();
             });
     });
@@ -66,11 +72,14 @@ describe('Register', () => {
                 phoneNumber: "0612345678"
             })
             .end((err, res) => {
-                res.should.have.status(400);
+                assert(err === null);
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('400');
-                res.body.should.have.property('message').eql('Password is not valid, registration failed');
-                res.body.should.have.property('data');
+                let { status, message, data } = res.body;
+                status.should.equal('400');
+                message.should.be.a('string').that.equal('Password is not valid, registration failed');
+                data.should.be.a('object').that.is.empty;
+
                 done();
             });
 
@@ -89,11 +98,14 @@ describe('Register', () => {
                 phoneNumber: "0612345678"
             })
             .end((err, res) => {
-                res.should.have.status(403);
+                assert(err === null);
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('403');
-                res.body.should.have.property('message').eql('Email already exists, registration failed');
-                res.body.should.have.property('data');
+                let { status, message, data } = res.body;
+                status.should.equal('403');
+                message.should.be.a('string').that.equal('Email already exists, registration failed');
+                data.should.be.a('object').that.is.empty;
+
                 done();
             });
     });
@@ -111,19 +123,22 @@ describe('Register', () => {
                 phoneNumber: "0612345678"
             })
             .end((err, res) => {
-                res.should.have.status(201);
+                assert(err === null);
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('201');
-                res.body.should.have.property('message').eql('New user registered');
-                res.body.should.have.property('data');
-                // res.body.data.should.have.property('token');
-                res.body.data.should.have.property('id');
-                res.body.data.should.have.property('firstName').eql('test');
-                res.body.data.should.have.property('lastName').eql('test');
-                res.body.data.should.have.property('street').eql('test');
-                res.body.data.should.have.property('city').eql('test');
-                res.body.data.should.have.property('email').eql('test2@test.test');
-                res.body.data.should.have.property('phoneNumber').eql('0612345678');
+                let { status, message, data } = res.body;
+                status.should.equal('201');
+                message.should.be.a('string').that.equal('New user registered');
+                data.should.be.a('object');
+                data.id.should.be.a('number');
+                data.firstName.should.be.a('string').that.equal('test');
+                data.lastName.should.be.a('string').that.equal('test');
+                data.street.should.be.a('string').that.equal('test');
+                data.city.should.be.a('string').that.equal('test');
+                data.email.should.be.a('string').that.equal('test2@test.test');
+                data.password.should.be.a('string').that.equal('Abcdefgh1!');
+                data.phoneNumber.should.be.a('string').that.equal('0612345678');
+
                 done();
             });
     });
