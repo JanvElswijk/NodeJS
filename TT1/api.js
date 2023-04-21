@@ -1,16 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const { User, users } = require("./user");
-const crypto = require('crypto');
 
 const bodyParser = require("body-parser");
 const validation = require("./validation");
 
+const jwt = require('jsonwebtoken');
+const jwtSecret = 'NeverGonnaGiveYouUp';
 
-const checkAuth = (token) => {
-    return users.find((user) => user.token === token);
-
-}
 
 router.use(bodyParser.json());
 
@@ -37,10 +34,13 @@ router.post("/login", (req, res) => {
         });
     }
 
+    // Create token
+    const token = jwt.sign({ userId: user.id }, jwtSecret);
+
     res.status(200).json({
         status: "200",
         message: "User logged in",
-        data: user,
+        data: {user, token},
     });
 });
 
@@ -120,11 +120,7 @@ router.post("/register", (req, res) => {
     }
 
     // Create new user
-    const newUser = new User(null, users.length + 1, firstName, lastName, street, city, true, email, password, phoneNumber);
-    newUser.token = crypto.createHash('sha256')
-        .update(JSON.stringify(newUser))
-        .digest('hex');
-
+    const newUser = new User(users.length + 1, firstName, lastName, street, city, true, email, password, phoneNumber);
     users.push(newUser);
 
     res.status(201).json({
@@ -187,8 +183,8 @@ router.get("/user", (req, res) => {
 });
 
 // UC-203 /api/user/profile
-router.get("/user/profile", (req, res) => {
-    const token = req.headers.authorization.split(' ')[1];
+router.get('/user/profile', (req, res) => {
+    const token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
 
     if (!token) {
         return res.status(401).json({
@@ -196,122 +192,162 @@ router.get("/user/profile", (req, res) => {
             message: "Unauthorized, no token provided",
             data: {},
         });
-    } else if (!checkAuth(token)) {
-        return res.status(401).json({
+    }
+
+    jwt.verify(token, jwtSecret, function (err, decoded) {
+        if (err) {
+            return res.status(401).json({
+                status: "401",
+                message: "Unauthorized",
+                data: {},
+            });
+        } else {
+            const userId = decoded.id;
+            const user = users.find((user) => user.id === userId);
+
+            if (!user) {
+                return res.status(404).json({
+                    status: "404",
+                    message: "User not found, token invalid",
+                    data: {},
+                });
+            }
+
+            res.status(200).json({
+                status: "200",
+                message: "Success",
+                data: user,
+            });
+        }
+    });
+});
+
+router.use((err, req, res, next) => {
+    if (err.name === "UnauthorizedError") {
+        res.status(401).json({
             status: "401",
             message: "Unauthorized",
             data: {},
         });
     }
-
-    const user = users.find((user) => user.token === token);
-
-    res.status(200).json({
-        status: "200",
-        message: "Success, user profile found",
-        data: user,
-    });
 });
-
 router.route("/user/:userId")
-    .all((req, res, next) => {
-        if (!req.headers.authorization) {
-            next();
-        } else if (!checkAuth(req.headers.authorization.split(' ')[1])) {
-            return res.status(401).json({
-                status: "401",
-                message: "Unauthorized, invalid token",
-                data: {},
-            });
-        } else {
-            next();
-        }
-    })
     .get((req, res) => {
         const userId = parseInt(req.params.userId);
         const user = users.find((user) => user.id === userId);
-        let userAuth = false;
-        if (req.headers.authorization) {
-            const authToken = req.headers.authorization.split(' ')[1];
-            userAuth = users.find((user) => user.token === authToken);
-        }
+
         if (!user) return res.status(404).json({status: "404", message: "User not found, no user with that id", data: {}});
-        else if (userAuth) return res.status(200).json({status: "200", message: "Success, user with id " + user.id + " found", data: user});
-        else {
-            const { password, token, ...sanitizedUser } = user;
-            return res.status(200).json({status: "200", message: "Success, user with that id found", data: sanitizedUser});
+
+        const token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
+
+        if (!token) {
+            jwt.verify(token, jwtSecret, function (err, decoded) {
+                if (err) {
+                    return res.status(401).json({
+                        status: "401",
+                        message: "Unauthorized, invalid token",
+                        data: {},
+                    });
+                } else {
+                    if (decoded.userId === req.params.userId) {
+                        return res.status(200).json({
+                            status: "200",
+                            message: "Success, user with that id found",
+                            data: user,
+                        });
+                    } else {
+                        return res.status(401).json({
+                            status: "401",
+                            message: "Unauthorized",
+                            data: {},
+                        });
+                    }
+                }
+            });
+        } else {
+            const { password, ...sanitizedUser } = user;
+            return res.status(200).json({
+                status: "200",
+                message: "Success, user with that id found",
+                data: sanitizedUser,
+            });
         }
+
     })
     .put((req, res) => {
         const userId = parseInt(req.params.userId);
         const editUser = users.find((user) => user.id === userId);
-
-        if (!editUser) return res.status(404).json({status: "404", message: "User not found, edit failed", data: {}});
-
-        if (!req.headers.authorization) return res.status(401).json({status: "401", message: "Unauthorized", data: {}});
-        const userAuth = editUser.token === req.headers.authorization.split(' ')[1];
-
-        if (!userAuth) return res.status(403).json({status: "403", message: "Forbidden", data: {}});
+        const token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
         const {firstName, lastName, street, city, email, password, phoneNumber} = req.body;
 
+        if (!editUser) return res.status(404).json({status: "404", message: "User not found, edit failed", data: {}});
         if (!email) return res.status(400).json({status: "400", message: "Missing required field, email, edit failed", data: {}});
+        if (!validation.validateEmail(email)) return res.status(400).json({status: "400", message: "Email is not valid, edit failed", data: {}});
+        if (users.find((user) => user.email === email && user.id !== userId)) return res.status(409).json({status: "409", message: "Email already exists, edit failed", data: {}});
+        if (!validation.validatePassword(password)) return res.status(400).json({status: "400", message: "Password is not valid, edit failed", data: {}});
+        if (!validation.validatePhoneNumber(phoneNumber)) return res.status(400).json({status: "400", message: "Phone number is not valid, edit failed", data: {}});
 
-        if (!validation.validateEmail(email)) {
-            return res.status(400).json({
-                status: "400",
-                message: "Email is not valid, edit failed",
-                data: {},
+        if (!token) {
+            return res.status(401).json({status: "401", message: "Unauthorized", data: {}});
+        } else if (token) {
+            jwt.verify(token, jwtSecret, function (err, decoded) {
+                if (err) {
+                    return res.status(401).json({status: "401", message: "Unauthorized, invalid token", data: {}});
+                } else {
+                    if (parseInt(decoded.id) !== parseInt(req.params.userId)) {
+                        return res.status(403).json({status: "403", message: "Forbidden", data: {}});
+                    } else {
+                        editUser.firstName = firstName || editUser.firstName;
+                        editUser.lastName = lastName || editUser.lastName;
+                        editUser.street = street || editUser.street;
+                        editUser.city = city || editUser.city;
+                        editUser.email = email;
+                        editUser.password = password || editUser.password;
+                        editUser.phoneNumber = phoneNumber || editUser.phoneNumber;
+
+                        return res.status(200).json({
+                            status: "200",
+                            message: "User successfully edited",
+                            data: editUser,
+                        });
+                    }
+                }
             });
         }
-        else if (users.find((user) => user.email === email && user.id !== userId)) return res.status(409).json({status: "409", message: "Email already exists, edit failed", data: {}});
 
-        if (!validation.validatePassword(password)) {
-            return res.status(400).json({
-                status: "400",
-                message: "Password is not valid, edit failed",
-                data: {},
-            });
-        }
-
-        if (!validation.validatePhoneNumber(phoneNumber)) {
-            return res.status(400).json({
-                status: "400",
-                message: "Phone number is not valid, edit failed",
-                data: {},
-            });
-        }
-
-        if (users.find(user => user.email === email && user.id !== userId)) {
-            return res.status(409).json({
-                status: "409",
-                message: "Email already exists, edit failed",
-                data: {},
-            });
-        }
-        editUser.firstName = firstName || editUser.firstName;
-        editUser.lastName = lastName || editUser.lastName;
-        editUser.street = street || editUser.street;
-        editUser.city = city || editUser.city;
-        editUser.email = email;
-        editUser.password = password || editUser.password;
-        editUser.phoneNumber = phoneNumber || editUser.phoneNumber;
-
-        res.status(200).json({
-            status: "200",
-            message: "User successfully edited",
-            data: editUser,
-        });
     })
     .delete((req, res) => {
+        // const userId = parseInt(req.params.userId);
+        // const deleteUser = users.find((user) => user.id === userId);
+        // if (!deleteUser) return res.status(404).json({status: "404", message: "User not found, delete failed", data: {}});
+        // if (!req.headers.authorization) return res.status(401).json({status: "401", message: "Unauthorized", data: {}});
+        // const userAuth = deleteUser.token === req.headers.authorization.split(' ')[1];
+        // if (!userAuth) return res.status(403).json({status: "403", message: "Forbidden", data: {}});
+        // else {
+        //     users.splice(users.indexOf(deleteUser), 1);
+        //     return res.status(200).json({status: "200", message: "User successfully deleted", data: deleteUser});
+        // }
+
         const userId = parseInt(req.params.userId);
         const deleteUser = users.find((user) => user.id === userId);
+        const token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
+
         if (!deleteUser) return res.status(404).json({status: "404", message: "User not found, delete failed", data: {}});
-        if (!req.headers.authorization) return res.status(401).json({status: "401", message: "Unauthorized", data: {}});
-        const userAuth = deleteUser.token === req.headers.authorization.split(' ')[1];
-        if (!userAuth) return res.status(403).json({status: "403", message: "Forbidden", data: {}});
-        else {
-            users.splice(users.indexOf(deleteUser), 1);
-            return res.status(200).json({status: "200", message: "User successfully deleted", data: deleteUser});
+        if (!token) {
+            return res.status(401).json({status: "401", message: "Unauthorized", data: {}});
+        } else if (token) {
+            jwt.verify(token, jwtSecret, function (err, decoded) {
+                if (err) {
+                    return res.status(401).json({status: "401", message: "Unauthorized, invalid token", data: {}});
+                } else {
+                    if (parseInt(decoded.id) !== parseInt(req.params.userId)) {
+                        return res.status(403).json({status: "403", message: "Forbidden", data: {}});
+                    } else {
+                        users.splice(users.indexOf(deleteUser), 1);
+                        return res.status(200).json({status: "200", message: "User successfully deleted", data: deleteUser});
+                    }
+                }
+            });
         }
     });
     module.exports = router;

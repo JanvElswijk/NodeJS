@@ -1,6 +1,5 @@
 class User {
-    constructor(token, id, firstName, lastName, street, city, isActive, email, password, phoneNumber) {
-        this.token = token;
+    constructor(id, firstName, lastName, street, city, isActive, email, password, phoneNumber) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -15,7 +14,6 @@ class User {
 
 const users = [
     new User(
-        'testtoken1',
         1,
         "John",
         "Doe",
@@ -27,7 +25,6 @@ const users = [
         "0612345678"
     ),
     new User(
-        'testtoken2',
         2,
         "Jane",
         "Doe",
@@ -39,7 +36,6 @@ const users = [
         "0612345678"
     ),
     new User(
-        'testtoken3',
         3,
         "Jack",
         "Doe",
@@ -51,7 +47,6 @@ const users = [
         "0612345678"
     ),
     new User(
-        'testtoken4',
         4,
         "Jill",
         "Doe",

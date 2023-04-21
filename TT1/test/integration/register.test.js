@@ -115,7 +115,6 @@ describe('Register', () => {
                 res.body.should.have.property('status').eql('201');
                 res.body.should.have.property('message').eql('New user registered');
                 res.body.should.have.property('data');
-                // res.body.data.should.have.property('token');
                 res.body.data.should.have.property('id');
                 res.body.data.should.have.property('firstName').eql('test');
                 res.body.data.should.have.property('lastName').eql('test');

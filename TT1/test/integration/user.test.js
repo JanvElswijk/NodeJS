@@ -21,7 +21,6 @@ describe('User', () => {
                 res.body.data.should.be.a('array');
                 res.body.data.length.should.be.greaterThan(1);
                 res.body.data[0].should.not.have.property('password');
-                // !res.body.data.user.should.have.property('token');
                 done();
             });
     });
@@ -52,7 +51,6 @@ describe('User', () => {
                 res.body.data.should.be.a('array');
                 res.body.data[0].should.not.have.property('password');
                 res.body.data[0].should.have.property('isActive').eql(false);
-                // !res.body.data.user.should.have.property('token');
                 done();
             });
     });
@@ -69,7 +67,6 @@ describe('User', () => {
                 res.body.data.should.be.a('array');
                 res.body.data[0].should.not.have.property('password');
                 res.body.data[0].should.have.property('isActive').eql(true);
-                // !res.body.data.user.should.have.property('token');
                 done();
             });
     });
@@ -85,7 +82,6 @@ describe('User', () => {
                 res.body.should.have.property('data');
                 res.body.data.should.be.a('array');
                 res.body.data[0].should.not.have.property('password');
-                // !res.body.data.user.should.have.property('token');
                 done();
             });
     });

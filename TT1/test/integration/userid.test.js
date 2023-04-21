@@ -3,6 +3,20 @@ const chaiHttp = require('chai-http');
 
 const app = require('../../app');
 
+const jwt = require('jsonwebtoken');
+const jwtSecret = 'NeverGonnaGiveYouUp'
+const jwtWrongSecret = 'NeverGonnaLetYouDown'
+
+const getWrongToken = (id) => {
+    return jwt.sign({
+        id: id}, jwtWrongSecret);
+}
+
+const getValidToken = (id) => {
+    return jwt.sign({
+        id: id}, jwtSecret);
+}
+
 chai.use(chaiHttp);
 
 chai.should();
@@ -12,7 +26,7 @@ describe('Userid', () => {
         chai
             .request(app)
             .get('/api/user/1')
-            .set({"Authorization": `Bearer a`})
+            .set({"Authorization": `Bearer` + getWrongToken(1)})
             .end((err, res) => {
                 res.should.have.status(401);
                 res.body.should.be.a('object');
@@ -42,6 +56,7 @@ describe('Userid', () => {
         chai
             .request(app)
             .get('/api/user/1')
+            .set({"Authorization": `Bearer ` + getValidToken(1)})
             .end((err, res) => {
                 res.should.have.status(200);
                 res.body.should.be.a('object');
@@ -50,7 +65,6 @@ describe('Userid', () => {
                 res.body.should.have.property('data');
                 res.body.data.should.be.a('object');
                 res.body.data.should.not.have.property('password');
-                res.body.data.should.not.have.property('token');
                 done();
             });
     });
@@ -79,11 +93,11 @@ describe('Userid', () => {
         chai
             .request(app)
             .put('/api/user/1')
-            .set({"Authorization": `Bearer testtoken2`})
+            .set({"Authorization": "Bearer " + getValidToken(2)})
             .send({
                 "firstName": "Test",
                 "lastName": "Test",
-                "password": "Test",
+                "password": "Testtest1!",
                 "email": "test@test.test",
                 "phoneNumber": "0612345678"
             })
@@ -102,7 +116,7 @@ describe('Userid', () => {
         chai
             .request(app)
             .put('/api/user/1')
-            .set({"Authorization": `Bearer testtoken1`})
+            .set({"Authorization": "Bearer " + getValidToken(1)})
             .send({
                 "firstName": "Test",
                 "lastName": "Test",
@@ -150,7 +164,7 @@ describe('Userid', () => {
             .send({
                 "firstName": "Test",
                 "lastName": "Test",
-                "password": "Test",
+                "password": "Testtest1!",
                 "email": "test@test.test",
                 "phoneNumber": "0612345678"
             })
@@ -169,7 +183,7 @@ describe('Userid', () => {
         chai
             .request(app)
             .put('/api/user/1')
-            .set({"Authorization": `Bearer testtoken1`})
+            .set({"Authorization": "Bearer " + getValidToken(1)})
             .send({
                 "firstName": "Test",
                 "lastName": "Test",
@@ -225,7 +239,7 @@ describe('Userid', () => {
         chai
             .request(app)
             .delete('/api/user/1')
-            .set({"Authorization": `Bearer testtoken2`})
+            .set({"Authorization": "Bearer " + getValidToken(2)})
             .end((err, res) => {
                 res.should.have.status(403);
                 res.body.should.be.a('object');
@@ -241,7 +255,7 @@ describe('Userid', () => {
         chai
             .request(app)
             .delete('/api/user/1')
-            .set({"Authorization": `Bearer testtoken1`})
+            .set({"Authorization": "Bearer " + getValidToken(1)})
             .end((err, res) => {
                 res.should.have.status(200);
                 res.body.should.be.a('object');
