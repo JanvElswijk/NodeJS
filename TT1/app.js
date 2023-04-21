@@ -7,6 +7,8 @@ const api = require('./api');
 app.use('/api', api);
 
 app.use((req, res) => {
+    const method = req.method;
+    console.log('Method ' + method + ' called')
     res.status(404).json({
         status: '404',
         message: 'Page not found',

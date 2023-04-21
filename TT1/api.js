@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { User, users } = require("./user");
+const assert = require("assert");
 
 const bodyParser = require("body-parser");
 const validation = require("./validation");
@@ -70,53 +71,41 @@ router.post("/register", (req, res) => {
         phoneNumber
     } = req.body;
 
-    if (
-        !firstName ||
-        !lastName ||
-        !street ||
-        !city ||
-        !email ||
-        !password ||
-        !phoneNumber
-    ) {
-        return res.status(400).json({
-            status: "400",
-            message: "Missing required fields for registration",
-            data: {},
-        });
-    }
-
-    if (!validation.validateEmail(email)) {
-        return res.status(400).json({
-            status: "400",
-            message: "Email is not valid, registration failed",
-            data: {},
-        });
-    }
-
-    if (!validation.validatePassword(password)) {
-        return res.status(400).json({
-            status: "400",
-            message: "Password is not valid, registration failed",
-            data: {},
-        });
-    }
-
-    if (!validation.validatePhoneNumber(phoneNumber)) {
-        return res.status(400).json({
-            status: "400",
-            message: "Phone number is not valid, registration failed",
-            data: {},
-        });
-    }
-
-    const existingUser = users.find((user) => user.email === email);
-    if (existingUser) {
-        return res.status(403).json({
-            status: "403",
-            message: "Email already exists, registration failed",
-            data: {},
-        });
+    try {
+        assert(firstName, "Missing required fields for registration");
+        assert(typeof firstName === "string", "First name is not a string, registration failed");
+        assert(lastName, "Missing required fields for registration");
+        assert(typeof lastName === "string", "Last name is not a string, registration failed");
+        assert(street, "Missing required fields for registration");
+        assert(typeof street === "string", "Street is not a string, registration failed");
+        assert(city, "Missing required fields for registration");
+        assert(typeof city === "string", "City is not a string, registration failed");
+        assert(email, "Missing required fields for registration");
+        assert(typeof email === "string", "Email is not a string, registration failed");
+        assert(validation.validateEmail(email), "Email is not valid, registration failed");
+        const existingUser = users.find((user) => user.email === email);
+        assert(!existingUser, "Email already exists, registration failed");
+        assert(password, "Missing required fields for registration");
+        assert(typeof password === "string", "Password is not a string, registration failed");
+        assert(validation.validatePassword(password), "Password is not valid, registration failed");
+        assert(phoneNumber, "Missing required fields for registration");
+        assert(typeof phoneNumber === "string", "Phone number is not a string, registration failed");
+        assert(validation.validatePhoneNumber(phoneNumber), "Phone number is not valid, registration failed");
+    } catch (err) {
+        if (err.message === "Email already exists, registration failed") {
+            return res.status(403).json({
+                status: "403",
+                message: err.message,
+                data: {},
+            });
+        } else {
+            return res.status(400).json({
+                status: "400",
+                message: err.message,
+                data: {},
+            });
+        }
+        return;
     }
 
     // Create new user
@@ -132,54 +121,27 @@ router.post("/register", (req, res) => {
 
 // UC-202 /api/user
 // UC-202 /api/user?field1=:value1&field2=:value
-router.get("/user", (req, res) => {
+router.get('/user', (req, res) => {
     const { query } = req;
 
-    if (Object.keys(query).length === 0) {
-        const sanitizedUsers = users.map(({ password, ...rest }) => ({ ...rest }));
+    const filteredUsers = query ?
+        users.filter(user =>
+            Object.entries(query).every(([key, value]) =>
+                (typeof user[key] === 'boolean') ? value === user[key].toString() : value === user[key]
+            )
+        ) :
+        users;
 
-        res.status(200).json({
-            status: "200",
-            message: "Success, no filters applied",
-            data: sanitizedUsers,
-        });
-    } else {
-        const filterUsers = (users, filters) => {
-            return users.filter((user) => {
-                for (const key in filters) {
-                    const queryValue = filters[key];
-                    const userValue = user[key];
+    const message = Object.keys(query).length ?
+        'Success, filters applied' :
+        'Success, no filters applied';
 
-                    if (typeof userValue === "boolean") {
-                        if (queryValue !== userValue.toString()) {
-                            return false;
-                        }
-                    } else {
-                        if (queryValue !== userValue) {
-                            return false;
-                        }
-                    }
-                }
-                return true;
-            });
-        };
-        const filteredUsers = filterUsers(users, query);
-
-        if (filteredUsers.length === 0) {
-            res.status(200).json({
-                status: "200",
-                message: "Success, filters applied",
-                data: {},
-            });
-        } else {
-            const sanitizedFilteredUsers = filteredUsers.map(({ password, ...rest }) => ({ ...rest }));
-            res.status(200).json({
-                status: "200",
-                message: "Success, filters applied",
-                data: sanitizedFilteredUsers,
-            });
-        }
+    if (filteredUsers.length === 0) {
+        return res.status(200).json({ status: '200', message, data: {} });
     }
+
+    const sanitizedUsers = filteredUsers.map(({ password, ...rest }) => rest);
+    res.status(200).json({ status: '200', message, data: sanitizedUsers });
 });
 
 // UC-203 /api/user/profile
@@ -222,15 +184,6 @@ router.get('/user/profile', (req, res) => {
     });
 });
 
-router.use((err, req, res, next) => {
-    if (err.name === "UnauthorizedError") {
-        res.status(401).json({
-            status: "401",
-            message: "Unauthorized",
-            data: {},
-        });
-    }
-});
 router.route("/user/:userId")
     .get((req, res) => {
         const userId = parseInt(req.params.userId);
@@ -276,58 +229,62 @@ router.route("/user/:userId")
     })
     .put((req, res) => {
         const userId = parseInt(req.params.userId);
-        const editUser = users.find((user) => user.id === userId);
-        const token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
-        const {firstName, lastName, street, city, email, password, phoneNumber} = req.body;
+        const editUser = users.find(user => user.id === userId);
+        const { firstName, lastName, street, city, email, password, phoneNumber } = req.body;
 
-        if (!editUser) return res.status(404).json({status: "404", message: "User not found, edit failed", data: {}});
-        if (!email) return res.status(400).json({status: "400", message: "Missing required field, email, edit failed", data: {}});
-        if (!validation.validateEmail(email)) return res.status(400).json({status: "400", message: "Email is not valid, edit failed", data: {}});
-        if (users.find((user) => user.email === email && user.id !== userId)) return res.status(409).json({status: "409", message: "Email already exists, edit failed", data: {}});
-        if (!validation.validatePassword(password)) return res.status(400).json({status: "400", message: "Password is not valid, edit failed", data: {}});
-        if (!validation.validatePhoneNumber(phoneNumber)) return res.status(400).json({status: "400", message: "Phone number is not valid, edit failed", data: {}});
-
-        if (!token) {
-            return res.status(401).json({status: "401", message: "Unauthorized", data: {}});
-        } else if (token) {
-            jwt.verify(token, jwtSecret, function (err, decoded) {
-                if (err) {
-                    return res.status(401).json({status: "401", message: "Unauthorized, invalid token", data: {}});
-                } else {
-                    if (parseInt(decoded.id) !== parseInt(req.params.userId)) {
-                        return res.status(403).json({status: "403", message: "Forbidden", data: {}});
-                    } else {
-                        editUser.firstName = firstName || editUser.firstName;
-                        editUser.lastName = lastName || editUser.lastName;
-                        editUser.street = street || editUser.street;
-                        editUser.city = city || editUser.city;
-                        editUser.email = email;
-                        editUser.password = password || editUser.password;
-                        editUser.phoneNumber = phoneNumber || editUser.phoneNumber;
-
-                        return res.status(200).json({
-                            status: "200",
-                            message: "User successfully edited",
-                            data: editUser,
-                        });
-                    }
-                }
-            });
+        try {
+            assert(email, "Missing required field, email, edit failed");
+            assert(validation.validateEmail(email), "Email is not valid, edit failed");
+            if (phoneNumber) {
+                assert(validation.validatePhoneNumber(phoneNumber), "Phone number is not valid, edit failed");
+            }
+            assert(editUser, "User not found, edit failed");
+            assert(!users.find(user => user.email === email && user.id !== userId), "Email already exists, edit failed");
+        } catch (err) {
+            if (err.message === "User not found, edit failed") {
+                return res.status(404).json({
+                    status: "404",
+                    message: err.message,
+                    data: {},
+                });
+            } else {
+                return res.status(400).json({
+                    status: "400",
+                    message: err.message,
+                    data: {},
+                });
+            }
+            return;
         }
 
+        //TODO THIS
+        // if (!token) {
+        //     return res.status(401).json({status: "401", message: "Unauthorized", data: {}});
+        // } else if (token) {
+        //     jwt.verify(token, jwtSecret, function (err, decoded) {
+        //         if (err) {
+        //             return res.status(401).json({status: "401", message: "Unauthorized, invalid token", data: {}});
+        //         } else {
+        //             if (parseInt(decoded.id) !== parseInt(req.params.userId)) {
+        //                 return res.status(403).json({status: "403", message: "Forbidden", data: {}});
+        //             } else {
+
+
+        editUser.firstName = firstName || editUser.firstName;
+        editUser.lastName = lastName || editUser.lastName;
+        editUser.street = street || editUser.street;
+        editUser.city = city || editUser.city;
+        editUser.email = email;
+        editUser.password = password || editUser.password;
+        editUser.phoneNumber = phoneNumber || editUser.phoneNumber;
+
+        res.status(200).json({
+            status: "200",
+            message: "User successfully edited",
+            data: editUser,
+        });
     })
     .delete((req, res) => {
-        // const userId = parseInt(req.params.userId);
-        // const deleteUser = users.find((user) => user.id === userId);
-        // if (!deleteUser) return res.status(404).json({status: "404", message: "User not found, delete failed", data: {}});
-        // if (!req.headers.authorization) return res.status(401).json({status: "401", message: "Unauthorized", data: {}});
-        // const userAuth = deleteUser.token === req.headers.authorization.split(' ')[1];
-        // if (!userAuth) return res.status(403).json({status: "403", message: "Forbidden", data: {}});
-        // else {
-        //     users.splice(users.indexOf(deleteUser), 1);
-        //     return res.status(200).json({status: "200", message: "User successfully deleted", data: deleteUser});
-        // }
-
         const userId = parseInt(req.params.userId);
         const deleteUser = users.find((user) => user.id === userId);
         const token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;

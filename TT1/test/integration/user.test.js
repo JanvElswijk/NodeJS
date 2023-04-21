@@ -2,6 +2,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 
 const app = require('../../app');
+const assert = require('assert');
 
 chai.use(chaiHttp);
 
@@ -13,14 +14,16 @@ describe('User', () => {
             .request(app)
             .get('/api/user')
             .end((err, res) => {
-                res.should.have.status(200);
+                assert(err === null);
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('200');
-                res.body.should.have.property('message').eql('Success, no filters applied');
-                res.body.should.have.property('data');
-                res.body.data.should.be.a('array');
-                res.body.data.length.should.be.greaterThan(1);
-                res.body.data[0].should.not.have.property('password');
+                let { status, message, data } = res.body;
+                status.should.equal('200');
+                message.should.be.a('string').that.equal('Success, no filters applied');
+                data.should.be.a('array');
+                data.length.should.be.greaterThan(1);
+                data[0].should.not.have.property('password');
+
                 done();
             });
     });
@@ -29,12 +32,14 @@ describe('User', () => {
             .request(app)
             .get('/api/user?test=test')
             .end((err, res) => {
-                res.should.have.status(200);
+                assert(err === null);
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('200');
-                res.body.should.have.property('message').eql('Success, filters applied');
-                res.body.should.have.property('data');
-                res.body.data.should.be.empty;
+                let { status, message, data } = res.body;
+                status.should.equal('200');
+                message.should.be.a('string').that.equal('Success, filters applied');
+                data.should.be.empty;
+
                 done();
             });
     });
@@ -43,14 +48,16 @@ describe('User', () => {
             .request(app)
             .get('/api/user?isActive=false')
             .end((err, res) => {
-                res.should.have.status(200);
+                assert(err === null);
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('200');
-                res.body.should.have.property('message').eql('Success, filters applied');
-                res.body.should.have.property('data');
-                res.body.data.should.be.a('array');
-                res.body.data[0].should.not.have.property('password');
-                res.body.data[0].should.have.property('isActive').eql(false);
+                let { status, message, data } = res.body;
+                status.should.equal('200');
+                message.should.be.a('string').that.equal('Success, filters applied');
+                data.should.be.a('array');
+                data[0].should.not.have.property('password');
+                data[0].should.have.property('isActive').that.equal(false);
+
                 done();
             });
     });
@@ -59,14 +66,16 @@ describe('User', () => {
             .request(app)
             .get('/api/user?isActive=true')
             .end((err, res) => {
-                res.should.have.status(200);
+                assert(err === null);
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('200');
-                res.body.should.have.property('message').eql('Success, filters applied');
-                res.body.should.have.property('data');
-                res.body.data.should.be.a('array');
-                res.body.data[0].should.not.have.property('password');
-                res.body.data[0].should.have.property('isActive').eql(true);
+                let { status, message, data } = res.body;
+                status.should.equal('200');
+                message.should.be.a('string').that.equal('Success, filters applied');
+                data.should.be.a('array');
+                data[0].should.not.have.property('password');
+                data[0].should.have.property('isActive').that.equal(true);
+
                 done();
             });
     });
@@ -75,13 +84,15 @@ describe('User', () => {
             .request(app)
             .get('/api/user?firstName=John&lastName=Doe')
             .end((err, res) => {
-                res.should.have.status(200);
+                assert(err === null);
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('200');
-                res.body.should.have.property('message').eql('Success, filters applied');
-                res.body.should.have.property('data');
-                res.body.data.should.be.a('array');
-                res.body.data[0].should.not.have.property('password');
+                let { status, message, data } = res.body;
+                status.should.equal('200');
+                message.should.be.a('string').that.equal('Success, filters applied');
+                data.should.be.a('array');
+                data[0].should.not.have.property('password');
+
                 done();
             });
     });

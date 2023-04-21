@@ -2,6 +2,8 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 
 const app = require('../../app');
+const {users} = require("../../user");
+const assert = require('assert');
 
 const jwt = require('jsonwebtoken');
 const jwtSecret = 'NeverGonnaGiveYouUp'
@@ -23,6 +25,7 @@ chai.should();
 
 describe('Userid', () => {
     it('TC-204-1 Ongeldig token', done => {
+        //TODO Change to new way of testing
         chai
             .request(app)
             .get('/api/user/1')
@@ -43,28 +46,42 @@ describe('Userid', () => {
             .request(app)
             .get('/api/user/999999999999999999999999')
             .end((err, res) => {
-                res.should.have.status(404);
+                assert(err === null);
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('404');
-                res.body.should.have.property('message').eql('User not found, no user with that id');
-                res.body.should.have.property('data');
-                res.body.data.should.be.empty;
+                let { status, message, data } = res.body;
+                status.should.equal('404');
+                message.should.be.a('string').that.equal('User not found, no user with that id');
+                data.should.be.a('object').that.is.empty;
+
                 done();
             });
     });
     it('TC-204-3 Gebruiker-ID bestaat', done => {
+        const user = users.find(user => user.id === 1)
         chai
             .request(app)
             .get('/api/user/1')
             .set({"Authorization": `Bearer ` + getValidToken(1)})
             .end((err, res) => {
-                res.should.have.status(200);
+                assert(err === null);
+
+                //TODO Token check?
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('200');
-                res.body.should.have.property('message').eql('Success, user with that id found');
-                res.body.should.have.property('data');
-                res.body.data.should.be.a('object');
-                res.body.data.should.not.have.property('password');
+                let { status, message, data } = res.body;
+                status.should.equal('200');
+                message.should.be.a('string').that.equal('Success, user with that id found');
+                data.should.be.a('object');
+                data.id.should.be.a('number').that.equal(user.id);
+                data.firstName.should.be.a('string').that.equal(user.firstName);
+                data.lastName.should.be.a('string').that.equal(user.lastName);
+                data.street.should.be.a('string').that.equal(user.street);
+                data.city.should.be.a('string').that.equal(user.city);
+                data.isActive.should.be.a('boolean').that.equal(user.isActive);
+                data.email.should.be.a('string').that.equal(user.email);
+                data.phoneNumber.should.be.a('string').that.equal(user.phoneNumber);
+                data.should.not.have.property('password');
                 done();
             });
     });
@@ -72,24 +89,27 @@ describe('Userid', () => {
         chai
             .request(app)
             .put('/api/user/1')
-            .set({"Authorization": `Bearer testtoken1`})
+            .set({"Authorization": "Bearer " + getValidToken(1)})
             .send({
                 "firstName": "Test",
                 "lastName": "Test",
                 "password": "Test",
             })
             .end((err, res) => {
-                res.should.have.status(400);
+                assert(err === null);
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('400');
-                res.body.should.have.property('message').eql('Missing required field, email, edit failed');
-                res.body.should.have.property('data');
-                res.body.data.should.be.a('object');
-                res.body.data.should.be.empty;
+                let { status, message, data } = res.body;
+                status.should.equal('400');
+                message.should.be.a('string').that.equal('Missing required field, email, edit failed');
+                data.should.be.a('object').that.is.empty;
+
                 done();
             });
     });
     it('TC-205-2 De gebruiker is niet de eigenaar van de data', done => {
+        //TODO Rewrite
+
         chai
             .request(app)
             .put('/api/user/1')
@@ -125,13 +145,14 @@ describe('Userid', () => {
                 "phoneNumber": "061234567"
             })
             .end((err, res) => {
-                res.should.have.status(400);
+                assert(err === null);
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('400');
-                res.body.should.have.property('message').eql('Phone number is not valid, edit failed');
-                res.body.should.have.property('data');
-                res.body.data.should.be.a('object');
-                res.body.data.should.be.empty;
+                let { status, message, data } = res.body;
+                status.should.equal('400');
+                message.should.be.a('string').that.equal('Phone number is not valid, edit failed');
+                data.should.be.a('object').that.is.empty;
+
                 done();
             });
     });
@@ -147,17 +168,19 @@ describe('Userid', () => {
                 "phoneNumber": "0612345678"
             })
             .end((err, res) => {
-                res.should.have.status(404);
+                assert(err === null);
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('404');
-                res.body.should.have.property('message').eql('User not found, edit failed');
-                res.body.should.have.property('data');
-                res.body.data.should.be.a('object');
-                res.body.data.should.be.empty;
+                let { status, message, data } = res.body;
+                status.should.equal('404');
+                message.should.be.a('string').that.equal('User not found, edit failed');
+                data.should.be.a('object').that.is.empty;
+
                 done();
             });
     });
     it('TC-205-5 Niet ingelogd', done => {
+        //TODO Rewrite
         chai
             .request(app)
             .put('/api/user/1')
@@ -192,16 +215,18 @@ describe('Userid', () => {
                 "phoneNumber": "0612345678"
             })
             .end((err, res) => {
-                res.should.have.status(200);
+                assert(err === null);
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('200');
-                res.body.should.have.property('message').eql('User successfully edited');
-                res.body.should.have.property('data');
-                res.body.data.should.be.a('object');
-                res.body.data.should.have.property('firstName').eql('Test');
-                res.body.data.should.have.property('lastName').eql('Test');
-                res.body.data.should.have.property('email').eql('test@test.test');
-                res.body.data.should.have.property('phoneNumber').eql('0612345678');
+                let { status, message, data } = res.body;
+                status.should.equal('200');
+                message.should.be.a('string').that.equal('User successfully edited');
+                data.should.be.a('object');
+                data.should.have.property('id').that.is.a('number').that.equal(1);
+                data.should.have.property('firstName').that.is.a('string').that.equal('Test');
+                data.should.have.property('lastName').that.is.a('string').that.equal('Test');
+                data.should.have.property('email').that.is.a('string').that.equal('test@test.test');
+                data.should.have.property('phoneNumber').that.is.a('string').that.equal('0612345678');
                 done();
             });
     });
@@ -210,17 +235,19 @@ describe('Userid', () => {
             .request(app)
             .delete('/api/user/999999999999999999999999')
             .end((err, res) => {
-                res.should.have.status(404);
+                assert(err === null);
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('404');
-                res.body.should.have.property('message').eql('User not found, delete failed');
-                res.body.should.have.property('data');
-                res.body.data.should.be.a('object');
-                res.body.data.should.be.empty;
+                let { status, message, data } = res.body;
+                status.should.equal('404');
+                message.should.be.a('string').that.equal('User not found, delete failed');
+                data.should.be.a('object').that.is.empty;
+
                 done();
             });
     });
     it('TC-206-2 Gebruiker is niet ingelogd', done => {
+        //TODO Rewrite
         chai
             .request(app)
             .delete('/api/user/1')
@@ -236,6 +263,7 @@ describe('Userid', () => {
             });
     });
     it('TC-206-3 Gebruiker is niet de eigenaar van de data', done => {
+        //TODO Rewrite
         chai
             .request(app)
             .delete('/api/user/1')
@@ -257,13 +285,15 @@ describe('Userid', () => {
             .delete('/api/user/1')
             .set({"Authorization": "Bearer " + getValidToken(1)})
             .end((err, res) => {
-                res.should.have.status(200);
+                assert(err === null);
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('200');
-                res.body.should.have.property('message').eql('User successfully deleted');
-                res.body.should.have.property('data');
-                res.body.data.should.be.a('object');
-                res.body.data.should.have.property('id').eql(1);
+                let { status, message, data } = res.body;
+                status.should.equal('200');
+                message.should.be.a('string').that.equal('User successfully deleted');
+                data.should.be.a('object');
+                data.should.have.property('id').that.equal(1);
+
                 done();
             });
     });
