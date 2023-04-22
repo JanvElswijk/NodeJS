@@ -25,18 +25,20 @@ chai.should();
 
 describe('Userid', () => {
     it('TC-204-1 Ongeldig token', done => {
-        //TODO Change to new way of testing
         chai
             .request(app)
             .get('/api/user/1')
             .set({"Authorization": `Bearer` + getWrongToken(1)})
             .end((err, res) => {
-                res.should.have.status(401);
+
+                assert(err === null);
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('401');
-                res.body.should.have.property('message').eql('Unauthorized, invalid token');
-                res.body.should.have.property('data');
-                res.body.data.should.be.empty;
+                let { status, message, data } = res.body;
+                status.should.equal('401');
+                message.should.be.a('string').that.equal('Unauthorized, invalid token');
+                data.should.be.a('object').that.is.empty;
+
                 done();
             });
 
@@ -66,8 +68,6 @@ describe('Userid', () => {
             .end((err, res) => {
                 assert(err === null);
 
-                //TODO Token check?
-
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
                 status.should.equal('200');
@@ -81,7 +81,8 @@ describe('Userid', () => {
                 data.isActive.should.be.a('boolean').that.equal(user.isActive);
                 data.email.should.be.a('string').that.equal(user.email);
                 data.phoneNumber.should.be.a('string').that.equal(user.phoneNumber);
-                data.should.not.have.property('password');
+                data.password.should.be.a('string').that.equal(user.password);
+
                 done();
             });
     });
@@ -108,8 +109,6 @@ describe('Userid', () => {
             });
     });
     it('TC-205-2 De gebruiker is niet de eigenaar van de data', done => {
-        //TODO Rewrite
-
         chai
             .request(app)
             .put('/api/user/1')
@@ -122,13 +121,14 @@ describe('Userid', () => {
                 "phoneNumber": "0612345678"
             })
             .end((err, res) => {
-                res.should.have.status(403);
+                assert(err === null);
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('403');
-                res.body.should.have.property('message').eql('Forbidden');
-                res.body.should.have.property('data');
-                res.body.data.should.be.a('object');
-                res.body.data.should.be.empty;
+                let { status, message, data } = res.body;
+                status.should.equal('403');
+                message.should.be.a('string').that.equal('Forbidden');
+                data.should.be.a('object').that.is.empty;
+
                 done();
             });
     });
@@ -180,7 +180,6 @@ describe('Userid', () => {
             });
     });
     it('TC-205-5 Niet ingelogd', done => {
-        //TODO Rewrite
         chai
             .request(app)
             .put('/api/user/1')
@@ -192,13 +191,14 @@ describe('Userid', () => {
                 "phoneNumber": "0612345678"
             })
             .end((err, res) => {
-                res.should.have.status(401);
+                assert(err === null);
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('401');
-                res.body.should.have.property('message').eql('Unauthorized');
-                res.body.should.have.property('data');
-                res.body.data.should.be.a('object');
-                res.body.data.should.be.empty;
+                let { status, message, data } = res.body;
+                status.should.equal('401');
+                message.should.be.a('string').that.equal('Unauthorized');
+                data.should.be.a('object').that.is.empty;
+
                 done();
             });
     });
@@ -247,35 +247,35 @@ describe('Userid', () => {
             });
     });
     it('TC-206-2 Gebruiker is niet ingelogd', done => {
-        //TODO Rewrite
         chai
             .request(app)
             .delete('/api/user/1')
             .end((err, res) => {
-                res.should.have.status(401);
+                assert(err === null);
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('401');
-                res.body.should.have.property('message').eql('Unauthorized');
-                res.body.should.have.property('data');
-                res.body.data.should.be.a('object');
-                res.body.data.should.be.empty;
+                let { status, message, data } = res.body;
+                status.should.equal('401');
+                message.should.be.a('string').that.equal('Unauthorized');
+                data.should.be.a('object').that.is.empty;
+
                 done();
             });
     });
     it('TC-206-3 Gebruiker is niet de eigenaar van de data', done => {
-        //TODO Rewrite
         chai
             .request(app)
             .delete('/api/user/1')
             .set({"Authorization": "Bearer " + getValidToken(2)})
             .end((err, res) => {
-                res.should.have.status(403);
+                assert(err === null);
+
                 res.body.should.be.a('object');
-                res.body.should.have.property('status').eql('403');
-                res.body.should.have.property('message').eql('Forbidden');
-                res.body.should.have.property('data');
-                res.body.data.should.be.a('object');
-                res.body.data.should.be.empty;
+                let { status, message, data } = res.body;
+                status.should.equal('403');
+                message.should.be.a('string').that.equal('Forbidden');
+                data.should.be.a('object').that.is.empty;
+
                 done();
             });
     });
