@@ -48,7 +48,7 @@ router.post("/register", (req, res) => {
         assert(typeof email === "string", "Email is not a string, registration failed");
         assert(validation.validateEmail(email), "Email is not valid, registration failed");
         const existingUser = users.find((user) => user.email === email);
-        assert(!existingUser, "Email already exists, registration failed");
+        assert(!existingUser, "User with that email already exists, registration failed");
         assert(password, "Missing required fields for registration");
         assert(typeof password === "string", "Password is not a string, registration failed");
         assert(validation.validatePassword(password), "Password is not valid, registration failed");
@@ -56,7 +56,7 @@ router.post("/register", (req, res) => {
         assert(typeof phoneNumber === "string", "Phone number is not a string, registration failed");
         assert(validation.validatePhoneNumber(phoneNumber), "Phone number is not valid, registration failed");
     } catch (err) {
-        if (err.message === "Email already exists, registration failed") {
+        if (err.message === "User with that email already exists, registration failed") {
             return res.status(403).json({
                 status: "403",
                 message: err.message,
@@ -106,16 +106,20 @@ router.get('/user', (req, res) => {
         ) :
         users;
 
-    const message = Object.keys(query).length ?
-        'Success, filters applied' :
-        'Success, no filters applied';
+    const message = Object.keys(query).length ? 'Success, filters applied' : 'Success, no filters applied';
 
     if (filteredUsers.length === 0) {
-        return res.status(200).json({ status: '200', message, data: {} });
+        return res.status(200).json({
+            status: '200',
+            message,
+            data: {} });
     }
 
     const sanitizedUsers = filteredUsers.map(({ password, ...rest }) => rest);
-    res.status(200).json({ status: '200', message, data: sanitizedUsers });
+    res.status(200).json({
+        status: '200',
+        message,
+        data: sanitizedUsers });
 });
 
 
@@ -129,6 +133,7 @@ router.get("/user/profile", (req, res) => {
 });
 
 router.route("/user/:userId")
+    //UC-204 /api/user/:userId
     .get((req, res) => {
         const userId = parseInt(req.params.userId);
         const user = users.find(user => user.id === userId);
@@ -148,6 +153,7 @@ router.route("/user/:userId")
             data: sanitizedUser,
         });
     })
+    //UC-205 /api/user/:userId
     .put((req, res) => {
         const userId = parseInt(req.params.userId);
         const editUser = users.find(user => user.id === userId);
@@ -160,7 +166,7 @@ router.route("/user/:userId")
                 assert(validation.validatePhoneNumber(phoneNumber), "Phone number is not valid, edit failed");
             }
             assert(editUser, "User not found, edit failed");
-            assert(!users.find(user => user.email === email && user.id !== userId), "Email already exists, edit failed");
+            assert(!users.find(user => user.email === email && user.id !== userId), "User with that email already exists, registration failed");
         } catch (err) {
             if (err.message === "User not found, edit failed") {
                 return res.status(404).json({
@@ -192,6 +198,7 @@ router.route("/user/:userId")
             data: editUser,
         });
     })
+    //UC-206 /api/user/:userId
     .delete((req, res) => {
         const userId = parseInt(req.params.userId);
         const deleteUser = users.find(user => user.id === userId);

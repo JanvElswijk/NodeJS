@@ -8,7 +8,7 @@ app.use('/api', api);
 
 app.use((req, res) => {
     const method = req.method;
-    console.log('Method ' + method + ' called')
+    console.log('Method ' + method + ' called on ' + req.url);
     res.status(404).json({
         status: '404',
         message: 'Page not found',

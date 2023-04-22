@@ -103,7 +103,7 @@ describe('Register', () => {
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
                 status.should.equal('403');
-                message.should.be.a('string').that.equal('Email already exists, registration failed');
+                message.should.be.a('string').that.equal('User with that email already exists, registration failed');
                 data.should.be.a('object').that.is.empty;
 
                 done();
