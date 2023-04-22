@@ -28,7 +28,7 @@ describe('Userid', () => {
         chai
             .request(app)
             .get('/api/user/1')
-            .set({"Authorization": `Bearer` + getWrongToken(1)})
+            .set({"Authorization": `Bearer ` + getWrongToken(1)})
             .end((err, res) => {
 
                 assert(err === null);

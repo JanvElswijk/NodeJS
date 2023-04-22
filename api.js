@@ -105,7 +105,6 @@ router.post("/register", (req, res) => {
                 data: {},
             });
         }
-        return;
     }
 
     // Create new user
@@ -197,9 +196,9 @@ router.route("/user/:userId")
 
         if (!user) return res.status(404).json({status: "404", message: "User not found, no user with that id", data: {}});
 
-        const token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
+        const token = (req.headers.authorization && req.headers.authorization.split(' ')[1]) || null;
 
-        if (!token) {
+        if (token !== null) {
             jwt.verify(token, jwtSecret, function (err, decoded) {
                 if (err) {
                     return res.status(401).json({
@@ -208,7 +207,7 @@ router.route("/user/:userId")
                         data: {},
                     });
                 } else {
-                    if (decoded.userId === req.params.userId) {
+                    if (parseInt(decoded.id) === parseInt(req.params.userId)) {
                         return res.status(200).json({
                             status: "200",
                             message: "Success, user with that id found",
