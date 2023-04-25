@@ -21,8 +21,7 @@ jobs:
       # Install dependencies
       - run: npm install
 
-      # Set Mocha permissions
-      - run: chmod +x $(which mocha)
+      - run: npm i -g mocha
 
       # Run tests
       - run: npm test
