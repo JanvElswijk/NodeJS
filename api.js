@@ -51,7 +51,7 @@ router.get("/info", (req, res) => {
         status: "200",
         message: "Server info endpoint",
         data: {
-            studentName: "Jan van Elswijk",
+            studentName: "Jan van Elswijk1",
             studentNumber: "2200971",
             description: "Dit is een express server voor het vak Programmeren 4",
         },
