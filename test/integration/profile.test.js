@@ -24,6 +24,7 @@ chai.should();
 describe('Profile', () => {
 
     it('TC-203-1 Ongeldig token', done => {
+        //TODO Rewrite
         chai
             .request(app)
             .get('/api/user/profile')
@@ -39,6 +40,7 @@ describe('Profile', () => {
 
     });
     it('TC-203-2 Gebruiker is ingelogd met geldig token.', done => {
+        //TODO Rewrite
         chai
             .request(app)
             .get('/api/user/profile')

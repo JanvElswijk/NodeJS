@@ -11,7 +11,7 @@ describe('Register', () => {
     it('TC-201-1 Verplicht veld ontbreekt', done => {
         chai
             .request(app)
-            .post('/api/register')
+            .post('/api/user')
             .send({
                 firstName: null,
                 lastName: "test",
@@ -36,7 +36,7 @@ describe('Register', () => {
     it('TC-201-2 Niet-valide emailadres', done => {
         chai
             .request(app)
-            .post('/api/register')
+            .post('/api/user')
             .send({
                 firstName: "test",
                 lastName: "test",
@@ -61,7 +61,7 @@ describe('Register', () => {
     it('TC-201-3 Niet-valide wachtwoord', done => {
         chai
             .request(app)
-            .post('/api/register')
+            .post('/api/user')
             .send({
                 firstName: "test",
                 lastName: "test",
@@ -87,7 +87,7 @@ describe('Register', () => {
     it('TC-201-4 Gebruiker bestaat al', done => {
         chai
             .request(app)
-            .post('/api/register')
+            .post('/api/user')
             .send({
                 firstName: "test",
                 lastName: "test",
@@ -112,7 +112,7 @@ describe('Register', () => {
     it('TC-201-5 Gebruiker succesvol geregistreerd', done => {
         chai
             .request(app)
-            .post('/api/register')
+            .post('/api/user')
             .send({
                 firstName: "test",
                 lastName: "test",

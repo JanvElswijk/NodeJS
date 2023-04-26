@@ -2,7 +2,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 
 const app = require('../../app');
-const {users} = require("../../user");
+const {users} = require("../../utils/in-mem-db");
 const assert = require('assert');
 
 const jwt = require('jsonwebtoken');
