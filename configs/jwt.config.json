@@ -1,3 +1,4 @@
 {
-  "secret": "NeverGonnaGiveYouUp"
+  "secret": "NeverGonnaGiveYouUp",
+  "wrongSecret": "NeverGonnaLetYouDown"
 }

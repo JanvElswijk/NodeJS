@@ -2,9 +2,9 @@ function validatePassword(password) {
     const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&+-=[\]{};':"\\|,.<>\/]{8,}$/;
     return regex.test(password);
 }
-function validateEmail(email) {
+function validateEmailAdress(emailAdress) {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
+    return regex.test(emailAdress);
 }
 function validatePhoneNumber(phoneNumber) {
     const regex = /^\d{10}$/;
@@ -13,6 +13,6 @@ function validatePhoneNumber(phoneNumber) {
 
 module.exports = {
     validatePassword,
-    validateEmail,
+    validateEmailAdress,
     validatePhoneNumber,
 }

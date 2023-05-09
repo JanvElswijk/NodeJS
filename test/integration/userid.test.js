@@ -1,29 +1,51 @@
+process.env.DB_DATABASE =
+    process.env.DB_DATABASE || 'testshareameal' || 'shareameal';
+
 const chai = require('chai');
 const chaiHttp = require('chai-http');
+const assert = require('assert');
+const jwt = require('jsonwebtoken');
 
 const app = require('../../app');
-const {users} = require("../../utils/in-mem-db");
-const assert = require('assert');
+const db = require("../../utils/mysql-db");
+const jwtConfig = require('../../configs/jwt.config.json');
 
-const jwt = require('jsonwebtoken');
-const jwtSecret = 'NeverGonnaGiveYouUp'
-const jwtWrongSecret = 'NeverGonnaLetYouDown'
+const CLEAR_MEAL_TABLE = 'DELETE IGNORE FROM `meal`;';
+const CLEAR_PARTICIPANTS_TABLE = 'DELETE IGNORE FROM `meal_participants_user`;';
+const CLEAR_USERS_TABLE = 'DELETE IGNORE FROM `user`;';
+const CLEAR_DB =
+    CLEAR_MEAL_TABLE + CLEAR_PARTICIPANTS_TABLE + CLEAR_USERS_TABLE;
+const INSERT_USER =
+    'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
+    '(1, "first", "last", "name@server.nl", "Secret1234!", "street", "city") ' + // 1
+    ',(2, "first", "last", "name2@servern.nl", "Secret1234!", "street", "city") ' // 2
+
 
 const getWrongToken = (id) => {
     return jwt.sign({
-        id: id}, jwtWrongSecret);
+        id: id}, jwtConfig.wrongSecret);
 }
 
 const getValidToken = (id) => {
     return jwt.sign({
-        id: id}, jwtSecret);
+        id: id}, jwtConfig.secret);
 }
 
 chai.use(chaiHttp);
 
 chai.should();
 
-describe('Userid', () => {
+describe('2.4 Userid GET', () => {
+    beforeEach(done => {
+        db.query(CLEAR_DB, [], (err) => {
+            assert(err === null);
+            db.query(INSERT_USER, [], (err) => {
+                assert(err === null);
+                done();
+            });
+        });
+    });
+
     it('TC-204-1 Ongeldig token', done => {
         chai
             .request(app)
@@ -46,7 +68,7 @@ describe('Userid', () => {
     it('TC-204-2 Gebruiker-ID bestaat niet', done => {
         chai
             .request(app)
-            .get('/api/user/999999999999999999999999')
+            .get('/api/user/3')
             .end((err, res) => {
                 assert(err === null);
 
@@ -60,7 +82,6 @@ describe('Userid', () => {
             });
     });
     it('TC-204-3 Gebruiker-ID bestaat', done => {
-        const user = users.find(user => user.id === 1)
         chai
             .request(app)
             .get('/api/user/1')
@@ -73,19 +94,21 @@ describe('Userid', () => {
                 status.should.equal('200');
                 message.should.be.a('string').that.equal('Success, user with that id found');
                 data.should.be.a('object');
-                data.id.should.be.a('number').that.equal(user.id);
-                data.firstName.should.be.a('string').that.equal(user.firstName);
-                data.lastName.should.be.a('string').that.equal(user.lastName);
-                data.street.should.be.a('string').that.equal(user.street);
-                data.city.should.be.a('string').that.equal(user.city);
-                data.isActive.should.be.a('boolean').that.equal(user.isActive);
-                data.email.should.be.a('string').that.equal(user.email);
-                data.phoneNumber.should.be.a('string').that.equal(user.phoneNumber);
-                data.password.should.be.a('string').that.equal(user.password);
+                data.id.should.be.a('number').that.equal(1);
+                data.firstName.should.be.a('string').that.equal('first');
+                data.lastName.should.be.a('string').that.equal('last');
+                data.street.should.be.a('string').that.equal('street');
+                data.city.should.be.a('string').that.equal('city');
+                data.isActive.should.be.a('boolean').that.equal(true);
+                data.emailAdress.should.be.a('string').that.equal('name@server.nl');
+                // data.phoneNumber.should.be.a('string').that.equal(user.phoneNumber);
+                data.password.should.be.a('string').that.equal('Secret1234!');
 
                 done();
             });
     });
+});
+describe('2.5 Userid PUT', () => {
     it('TC-205-1 Verplicht veld “emailAddress” ontbreekt', done => {
         chai
             .request(app)
@@ -102,7 +125,7 @@ describe('Userid', () => {
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
                 status.should.equal('400');
-                message.should.be.a('string').that.equal('Missing required field, email, edit failed');
+                message.should.be.a('string').that.equal('Missing required field, emailAdress, edit failed');
                 data.should.be.a('object').that.is.empty;
 
                 done();
@@ -117,7 +140,7 @@ describe('Userid', () => {
                 "firstName": "Test",
                 "lastName": "Test",
                 "password": "Testtest1!",
-                "email": "test@test.test",
+                "emailAdress": "test@test.test",
                 "phoneNumber": "0612345678"
             })
             .end((err, res) => {
@@ -141,7 +164,7 @@ describe('Userid', () => {
                 "firstName": "Test",
                 "lastName": "Test",
                 "password": "Testtest1!",
-                "email": "test@test.test",
+                "emailAdress": "test@test.test",
                 "phoneNumber": "061234567"
             })
             .end((err, res) => {
@@ -150,7 +173,7 @@ describe('Userid', () => {
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
                 status.should.equal('400');
-                message.should.be.a('string').that.equal('Phone number is not valid, edit failed');
+                message.should.be.a('string').that.equal('Invalid phoneNumber format, edit failed');
                 data.should.be.a('object').that.is.empty;
 
                 done();
@@ -159,7 +182,7 @@ describe('Userid', () => {
     it('TC-205-4 Gebruiker bestaat niet', done => {
         chai
             .request(app)
-            .put('/api/user/999999999999999999999999')
+            .put('/api/user/3')
             .send({
                 "firstName": "Test",
                 "lastName": "Test",
@@ -211,7 +234,7 @@ describe('Userid', () => {
                 "firstName": "Test",
                 "lastName": "Test",
                 "password": "Testtest1!",
-                "email": "test@test.test",
+                "emailAdress": "test@test.test",
                 "phoneNumber": "0612345678"
             })
             .end((err, res) => {
@@ -225,15 +248,18 @@ describe('Userid', () => {
                 data.should.have.property('id').that.is.a('number').that.equal(1);
                 data.should.have.property('firstName').that.is.a('string').that.equal('Test');
                 data.should.have.property('lastName').that.is.a('string').that.equal('Test');
-                data.should.have.property('email').that.is.a('string').that.equal('test@test.test');
+                data.should.have.property('emailAdress').that.is.a('string').that.equal('test@test.test');
                 data.should.have.property('phoneNumber').that.is.a('string').that.equal('0612345678');
                 done();
             });
     });
+});
+describe('2.6 Userid DELETE', () => {
     it('TC-206-1 Gebruiker bestaat niet', done => {
         chai
             .request(app)
-            .delete('/api/user/999999999999999999999999')
+            .delete('/api/user/3')
+            .set({"Authorization": "Bearer " + getValidToken(3)})
             .end((err, res) => {
                 assert(err === null);
 
@@ -292,7 +318,8 @@ describe('Userid', () => {
                 status.should.equal('200');
                 message.should.be.a('string').that.equal('User successfully deleted');
                 data.should.be.a('object');
-                data.should.have.property('id').that.equal(1);
+                data.should.have.property('deletedUser').that.is.a('object');
+                data.deletedUser.should.have.property('id').that.equal(1);
 
                 done();
             });

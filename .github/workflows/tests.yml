@@ -1,29 +1,65 @@
-name: Run the integration tests
+name: Testing and deployment
 
 on:
   push:
     branches:
       - main
-      - production
 
 jobs:
   integrationtests:
     runs-on: ubuntu-latest
+    env:
+      MYSQL_ROOT_PASSWORD: root
+      DB_HOST: '127.0.0.1'
+      DB_PORT: '3306'
+      DB_DATABASE: share_a_meal
+      DB_USER: root
+      DB_PASSWORD: root
+    services:
+      mysql:
+        image: mysql:5.7
+        ports:
+          - '3306'
     steps:
-      # Checkout the Repo
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@main
 
-      # Install Node 18
-      - name: Setup Node
-        uses: actions/setup-node@v1
-        with:
-          node-version: 18
+      - name: Start MySQL connection from host
+        run: |
+          sudo /etc/init.d/mysql start
+          sudo apt-get install -y mysql-client
+          mysql -uroot -p${{ env.MYSQL_ROOT_PASSWORD }} -e "SHOW DATABASES;"
+          mysql -uroot -p${{ env.MYSQL_ROOT_PASSWORD }} -e "CREATE DATABASE ${{env.DB_DATABASE}};"
 
-      # Install dependencies
-      - run: npm install
+      - name: Import database script
+        run: |
+          mysql -uroot -p${{env.MYSQL_ROOT_PASSWORD}} ${{env.DB_DATABASE}} < share-a-meal.sql
+          mysql -uroot -p${{env.MYSQL_ROOT_PASSWORD}} ${{env.DB_DATABASE}} -e "SHOW TABLES;"
 
-      # Install mocha
-      - run: npm i -g mocha
+      - name: npm install
+        run: |
+          npm install
 
-      # Run tests
-      - run: npm test
+      - name: npm test
+        run: |
+          npm test -- --DB_PASSWORD {{env.MYSQL_ROOT_PASSWORD}} --DB_USER root --DB_NAME ${{env.DB_DATABASE}}
+
+  Railway-deploy:
+    needs: integrationtests
+    runs-on: ubuntu-latest
+    environment:
+      name: Railway # naam van mijn environment op GitHub
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@main
+
+      - name: 'Current token'
+        run: |
+          echo "secrets.RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}"
+
+      - name: Install Railway
+        run: npm i -g @railway/cli
+
+      - name: Deploy server to Railway
+        run: railway up
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

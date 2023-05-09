@@ -1,14 +1,17 @@
+const bodyParser = require("body-parser");
+const jwt = require("jsonwebtoken");
 const express = require('express');
 const app = express();
 const port = 3000;
 
 const userRoutes = require('./routes/user.routes');
-const logger = require('./utils/logger').logger;
-
-const {users} = require("./utils/in-mem-db");
-const jwt = require("jsonwebtoken");
 const jwtConfig = require("./configs/jwt.config");
-const bodyParser = require("body-parser");
+const logger = require('./utils/logger').logger;
+const db = require('./utils/mysql-db');
+// const {users} = require("./utils/in-mem-db");
+
+
+
 
 app.use(bodyParser.json());
 
@@ -18,11 +21,25 @@ app.use('*', (req, res, next) => {
     next();
 });
 
+app.get("/db", (req, res) => {
+    db.query('SELECT * FROM user', (err, rows) => {
+        if (err) {
+            console.log(err);
+        }
+        console.log(rows);
+        res.status(200).json({
+            status: "200",
+            message: "YES",
+            data: rows,
+        });
+    });
+});
+
 app.post("/api/login", (req, res) => {
-    const { email, password } = req.body;
+    const { emailAdress, password } = req.body;
 
     // Check if all fields are present and not empty
-    if (!email || !password) {
+    if (!emailAdress || !password) {
         return res.status(400).json({
             status: "400",
             message: "Missing required fields for login",
@@ -30,24 +47,38 @@ app.post("/api/login", (req, res) => {
         });
     }
 
-    // Check if email and password are correct
-    const user = users.find((user) => user.email === email && user.password === password);
-    if (!user) {
-        return res.status(401).json({
-            status: "401",
-            message: "Unauthorized, invalid email or password",
-            data: {},
+    db.query('SELECT * FROM user WHERE emailAdress = ?', [emailAdress], (err, rows) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({
+                status: "500",
+                message: "Internal Server Error",
+                data: {},
+            });
+        }
+        if (rows.length === 0) {
+            return res.status(404).json({
+                status: "404",
+                message: "User not found",
+                data: {},
+            });
+        }
+        if (rows[0].password !== password) {
+            return res.status(401).json({
+                status: "400",
+                message: "Unauthorized, invalid password",
+                data: {},
+            });
+        }
+        const token = jwt.sign({ userId: rows[0].id }, jwtConfig.secret);
+        const user = rows[0];
+        res.status(200).json({
+            status: "200",
+            message: "Login successful",
+            data: {user, token},
         });
-    }
-
-    // Create token
-    const token = jwt.sign({ userId: user.id }, jwtConfig.secret);
-
-    res.status(200).json({
-        status: "200",
-        message: "User logged in",
-        data: {user, token},
     });
+
 });
 
 app.get("/api/info", (req, res) => {

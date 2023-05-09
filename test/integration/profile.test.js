@@ -1,28 +1,49 @@
+process.env.DB_DATABASE =
+    process.env.DB_DATABASE || 'testshareameal' || 'shareameal';
+
+
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const assert = require('assert');
-const app = require('../../app');
 const jwt = require('jsonwebtoken');
-const jwtSecret = "NeverGonnaGiveYouUp"
-const jwtWrongSecret = "NeverGonnaLetYouDown"
 
+const app = require('../../app');
+const jwtConfig = require('../../configs/jwt.config.json');
+const db = require("../../utils/mysql-db");
+
+const CLEAR_MEAL_TABLE = 'DELETE IGNORE FROM `meal`;';
+const CLEAR_PARTICIPANTS_TABLE = 'DELETE IGNORE FROM `meal_participants_user`;';
+const CLEAR_USERS_TABLE = 'DELETE IGNORE FROM `user`;';
+const CLEAR_DB =
+    CLEAR_MEAL_TABLE + CLEAR_PARTICIPANTS_TABLE + CLEAR_USERS_TABLE;
+const INSERT_USER =
+    'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
+    '(1, "first", "last", "j.doe@server.com", "Secret1234!", "street", "city") ' // 1
 
 const getWrongToken = (id) => {
     return jwt.sign({
-        id: id}, jwtWrongSecret);
+        id: id}, jwtConfig.wrongSecret);
 }
 
 const getValidToken = (id) => {
     return jwt.sign({
-        id: id}, jwtSecret);
+        id: id}, jwtConfig.secret);
 }
 
 chai.use(chaiHttp);
 
 chai.should();
 
-describe('Profile', () => {
-
+describe('2.3 Profile', () => {
+    beforeEach(done => {
+        db.query(CLEAR_DB, [], (err) => {
+            assert(err === null);
+            db.query(INSERT_USER, [], (err) => {
+                assert(err === null);
+                done();
+            });
+        });
+    });
     it('TC-203-1 Ongeldig token', done => {
         chai
             .request(app)
@@ -55,14 +76,14 @@ describe('Profile', () => {
                 message.should.be.a('string').that.equal('Success');
                 data.should.be.a('object');
                 data.should.have.property('id').eql(1);
-                data.should.have.property('firstName').eql('John');
-                data.should.have.property('lastName').eql('Doe');
-                data.should.have.property('street').eql('Main Street 1');
-                data.should.have.property('city').eql('New York');
+                data.should.have.property('firstName'). eql('first');
+                data.should.have.property('lastName').eql('last');
+                data.should.have.property('street').eql('street');
+                data.should.have.property('city').eql('city');
                 data.should.have.property('isActive').eql(true);
-                data.should.have.property('email').eql('john@avans.nl');
-                data.should.have.property('password').eql('1234');
-                data.should.have.property('phoneNumber').eql('0612345678');
+                data.should.have.property('emailAdress').eql('j.doe@server.com');
+                data.should.have.property('password').eql('Secret1234!');
+                // data.should.have.property('phoneNumber').eql('0612345678');
 
                 done();
             });

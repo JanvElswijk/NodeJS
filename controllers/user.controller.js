@@ -1,77 +1,109 @@
-const { User, users } = require("../utils/in-mem-db");
+
 const assert = require("assert");
 const validation = require("../utils/validation");
 const jwt = require('jsonwebtoken');
 // const logger = require("../utils/logger").logger;
+const db = require("../utils/mysql-db");
 const jwtSecret = 'NeverGonnaGiveYouUp';
+
+
 const userController = {
     getAllUsers: (req, res) => {
-        const { query } = req;
+        const query = req.query;
+        const whereClauses = [];
+        const params = [];
 
-        const filteredUsers = query ?
-            users.filter(user =>
-                Object.entries(query).every(([key, value]) =>
-                    (typeof user[key] === 'boolean') ? value === user[key].toString() : value === user[key]
-                )
-            ) :
-            users;
-
-        const message = Object.keys(query).length ? 'Success, filters applied' : 'Success, no filters applied';
-
-        if (filteredUsers.length === 0) {
-            return res.status(200).json({
-                status: '200',
-                message,
-                data: {} });
+        for (const [key, value] of Object.entries(query)) {
+            if (key === "isActive") {
+                whereClauses.push(`isActive = ?`);
+                params.push(value === "true" ? 1 : value === "false" ? 0 : value);
+            } else {
+                whereClauses.push(`${key} = ?`);
+                params.push(value);
+            }
         }
 
-        const sanitizedUsers = filteredUsers.map(({ password, ...rest }) => rest);
-        res.status(200).json({
-            status: '200',
-            message,
-            data: sanitizedUsers });
+        let sql = "SELECT id, firstName, lastName, street, city, emailAdress, phoneNumber, isActive FROM user";
+        if (whereClauses.length > 0) {
+            sql += " WHERE " + whereClauses.join(" AND ");
+        }
+
+        db.query(sql, params, (err, rows) => {
+            if (err) {
+                if (err.code === "ER_BAD_FIELD_ERROR") {
+                    return res.status(400).json({
+                        status: "200",
+                        message: "Users retrieved successfully",
+                        data: {},
+                    });
+                }
+                return res.status(500).json({
+                    status: "500",
+                    message: "Internal server error",
+                    data: {},
+                });
+            }
+            rows.forEach((row) => {
+                row.isActive = row.isActive === 1;
+            });
+            return res.status(200).json({
+                status: "200",
+                message: "Users retrieved successfully",
+                data: rows,
+            });
+        });
     },
     getUserById: (req, res) => {
         const userId = parseInt(req.params.userId);
-        const user = users.find((user) => user.id === userId);
-
-        if (!user) return res.status(404).json({status: "404", message: "User not found, no user with that id", data: {}});
-
         const token = (req.headers.authorization && req.headers.authorization.split(' ')[1]) || null;
+        const sql = token !== null ? "SELECT * FROM user WHERE id = ?" : "SELECT id, firstName, lastName, street, city, emailAdress, phoneNumber, isActive FROM user WHERE id = ?";
+        const params = [userId];
 
-        if (token !== null) {
-            jwt.verify(token, jwtSecret, function (err, decoded) {
-                if (err) {
-                    return res.status(401).json({
-                        status: "401",
-                        message: "Unauthorized, invalid token",
-                        data: {},
-                    });
-                } else {
-                    if (parseInt(decoded.id) === parseInt(req.params.userId)) {
-                        return res.status(200).json({
-                            status: "200",
-                            message: "Success, user with that id found",
-                            data: user,
-                        });
-                    } else {
+        db.query(sql, params, (err, rows) => {
+            if (err) {
+                return res.status(500).json({
+                    status: "500",
+                    message: "Internal server error",
+                    data: {},
+                });
+            }
+
+            if (rows.length === 0) {
+                return res.status(404).json({
+                    status: "404",
+                    message: "User not found, no user with that id",
+                    data: {},
+                });
+            }
+
+            if (token !== null) {
+                jwt.verify(token, jwtSecret, function (err, decoded) {
+                    if (err) {
                         return res.status(401).json({
                             status: "401",
-                            message: "Unauthorized",
+                            message: "Unauthorized, invalid token",
                             data: {},
                         });
+                    } else {
+                        if (parseInt(decoded.id) === parseInt(req.params.userId)) {
+                            rows[0].isActive = rows[0].isActive === 1;
+                            return res.status(200).json({
+                                status: "200",
+                                message: "Success, user with that id found",
+                                data: rows[0],
+                            });
+                        }
                     }
-                }
-            });
-        } else {
-            const { password, ...sanitizedUser } = user;
-            return res.status(200).json({
-                status: "200",
-                message: "Success, user with that id found",
-                data: sanitizedUser,
-            });
-        }
-
+                });
+            } else {
+                rows[0].isActive = rows[0].isActive === 1;
+                return res.status(200).json({
+                    status: "200",
+                    message: "Success, user with that id found",
+                    data: rows[0],
+                });
+            }
+        });
     },
     createUser: (req, res) => {
         const {
@@ -79,7 +111,7 @@ const userController = {
             lastName,
             street,
             city,
-            email,
+            emailAdress,
             password,
             phoneNumber
         } = req.body;
@@ -93,11 +125,9 @@ const userController = {
             assert(typeof street === "string", "Street is not a string, registration failed");
             assert(city, "Missing required fields for registration");
             assert(typeof city === "string", "City is not a string, registration failed");
-            assert(email, "Missing required fields for registration");
-            assert(typeof email === "string", "Email is not a string, registration failed");
-            assert(validation.validateEmail(email), "Email is not valid, registration failed");
-            const existingUser = users.find((user) => user.email === email);
-            assert(!existingUser, "User with that email already exists, registration failed");
+            assert(emailAdress, "Missing required fields for registration");
+            assert(typeof emailAdress === "string", "emailAdress is not a string, registration failed");
+            assert(validation.validateEmailAdress(emailAdress), "emailAdress is not valid, registration failed");
             assert(password, "Missing required fields for registration");
             assert(typeof password === "string", "Password is not a string, registration failed");
             assert(validation.validatePassword(password), "Password is not valid, registration failed");
@@ -105,105 +135,191 @@ const userController = {
             assert(typeof phoneNumber === "string", "Phone number is not a string, registration failed");
             assert(validation.validatePhoneNumber(phoneNumber), "Phone number is not valid, registration failed");
         } catch (err) {
-            if (err.message === "User with that email already exists, registration failed") {
-                return res.status(403).json({
-                    status: "403",
-                    message: err.message,
+            return res.status(400).json({
+                status: "400",
+                message: err.message,
+                data: {},
+            });
+        }
+
+        // Check if user already exists
+        const checkUserQuery = `SELECT * FROM user WHERE emailAdress = ?`;
+        db.query(checkUserQuery, [emailAdress], (err, rows) => {
+            if (err) {
+                return res.status(500).json({
+                    status: "500",
+                    message: "Internal server error",
                     data: {},
                 });
             } else {
-                return res.status(400).json({
-                    status: "400",
-                    message: err.message,
-                    data: {},
-                });
+                if (rows.length > 0) {
+                    return res.status(403).json({
+                        status: "403",
+                        message: "User with that emailAdress already exists, registration failed",
+                        data: {},
+                    });
+                } else {
+                    // Create new user
+                    const newUserQuery = `INSERT INTO user (firstName, lastName, isActive, street, city, emailAdress, password, phoneNumber) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+                    db.query(newUserQuery, [firstName, lastName, 1, street, city, emailAdress, password, phoneNumber], (err, rows) => {
+                        if (err) {
+                            return res.status(500).json({
+                                status: "500",
+                                message: "Internal server error",
+                                data: {},
+                            });
+                        } else {
+                            return res.status(201).json({
+                                status: "201",
+                                message: "New user registered",
+                                data: {
+                                    id: rows.insertId,
+                                    firstName,
+                                    lastName,
+                                    street,
+                                    city,
+                                    emailAdress,
+                                    password,
+                                    phoneNumber,
+                                },
+                            });
+                        }
+                    });
+                }
             }
-        }
-
-        // Create new user
-        const newUser = new User(users.length + 1, firstName, lastName, street, city, true, email, password, phoneNumber);
-        users.push(newUser);
-
-        res.status(201).json({
-            status: "201",
-            message: "New user registered",
-            data: newUser,
         });
     },
     updateUser: (req, res) => {
         const userId = parseInt(req.params.userId);
-        const editUser = users.find((user) => user.id === userId);
-        const token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
-        const { firstName, lastName, street, city, email, password, phoneNumber } = req.body;
 
-        try {
-            assert(editUser, "User not found, edit failed");
-            assert(token, "Unauthorized");
-            assert(email, "Missing required field, email, edit failed");
-            assert(validation.validateEmail(email), "Invalid email format, edit failed");
-            if (phoneNumber) {
-                assert(validation.validatePhoneNumber(phoneNumber), "Phone number is not valid, edit failed");
+        // Check if user exists in db
+        const checkUserQuery = `SELECT * FROM user WHERE id = ?`;
+        db.query(checkUserQuery, [userId], (err, rows) => {
+            if (err) {
+                return res.status(500).json({
+                    status: "500",
+                    message: "Internal server error",
+                    data: {},
+                });
             }
-            assert(!users.find(user => user.email === email && user.id !== userId), "Email already exists, edit failed");
 
-            jwt.verify(token, jwtSecret, function (err, decoded) {
-                assert(!err, "Invalid token provided, edit failed");
-                assert(parseInt(decoded.id) === userId, "Forbidden");
+            if (rows.length === 0) {
+                return res.status(404).json({
+                    status: "404",
+                    message: "User not found, edit failed",
+                    data: {},
+                });
+            }
+
+            // User exists, check if token is valid
+            const token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
+            const { emailAdress } = req.body;
+
+            try {
+                assert(token, "Unauthorized");
+                assert(emailAdress, "Missing required field, emailAdress, edit failed");
+                assert(validation.validateEmailAdress(emailAdress), "Invalid emailAdress format, edit failed");
+                if (req.body.phoneNumber) {
+                    assert(validation.validatePhoneNumber(req.body.phoneNumber), "Invalid phoneNumber format, edit failed");
+                }
+
+                jwt.verify(token, jwtSecret, function (err, decoded) {
+                    assert(!err, "Invalid token provided, edit failed");
+                    assert(parseInt(decoded.id) === userId, "Forbidden");
+                });
+            } catch (error) {
+                switch (error.message) {
+                    case "Unauthorized":
+                        return res.status(401).json({ status: "401", message: error.message, data: {} });
+                    case "Forbidden":
+                        return res.status(403).json({ status: "403", message: error.message, data: {} });
+                    default:
+                        return res.status(400).json({ status: "400", message: error.message, data: {} });
+                }
+            }
+
+            // Update user
+            const updateUserQuery = `UPDATE user SET ${Object.keys(req.body).map(key => `${key} = ?`).join(", ")} WHERE id = ?`;
+            db.query(updateUserQuery, [...Object.values(req.body), userId], (err) => {
+                if (err) {
+                    return res.status(500).json({
+                        status: "500",
+                        message: "Internal server error",
+                        data: {},
+                    });
+                }
+
+                return res.status(200).json({
+                    status: "200",
+                    message: "User successfully edited",
+                    data: { id: userId, ...req.body },
+                });
             });
-        } catch (error) {
-            switch (error.message) {
-                case "Unauthorized":
-                    return res.status(401).json({status: "401", message: error.message, data: {}});
-                case "Forbidden":
-                    return res.status(403).json({status: "403", message: error.message, data: {}});
-                case "User not found, edit failed":
-                    return res.status(404).json({status: "404", message: error.message, data: {}});
-                default:
-                    return res.status(400).json({status: "400", message: error.message, data: {}});
-            }
-        }
-
-        editUser.firstName = firstName || editUser.firstName;
-        editUser.lastName = lastName || editUser.lastName;
-        editUser.street = street || editUser.street;
-        editUser.city = city || editUser.city;
-        editUser.email = email;
-        editUser.password = password || editUser.password;
-        editUser.phoneNumber = phoneNumber || editUser.phoneNumber;
-
-        res.status(200).json({
-            status: "200",
-            message: "User successfully edited",
-            data: editUser,
         });
     },
     deleteUser: (req, res) => {
+
         const userId = parseInt(req.params.userId);
-        const deleteUser = users.find((user) => user.id === userId);
-        const token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
 
-        try {
-            assert(deleteUser, "User not found, delete failed");
-            assert(token, "Unauthorized");
-            jwt.verify(token, jwtSecret, function (err, decoded) {
-                assert(!err, "Invalid token provided, delete failed");
-                assert(parseInt(decoded.id) === userId, "Forbidden");
-            });
+            // User exists, check if token is valid
+            const token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
 
-            users.splice(users.indexOf(deleteUser), 1);
-            return res.status(200).json({status: "200", message: "User successfully deleted", data: deleteUser});
-        } catch (error) {
-            switch (error.message) {
-                case "Unauthorized":
-                    return res.status(401).json({status: "401", message: error.message, data: {}});
-                case "Forbidden":
-                    return res.status(403).json({status: "403", message: error.message, data: {}});
-                case "User not found, delete failed":
-                    return res.status(404).json({status: "404", message: error.message, data: {}});
-                default:
-                    return res.status(400).json({status: "400", message: error.message, data: {}});
+            try {
+                assert(token, "Unauthorized");
+
+                jwt.verify(token, jwtSecret, function (err, decoded) {
+                    assert(!err, "Invalid token provided, delete failed");
+                    assert(parseInt(decoded.id) === userId, "Forbidden");
+                });
+            } catch (error) {
+                switch (error.message) {
+                    case "Unauthorized":
+                        return res.status(401).json({ status: "401", message: error.message, data: {} });
+                    case "Forbidden":
+                        return res.status(403).json({ status: "403", message: error.message, data: {} });
+                    default:
+                        return res.status(400).json({ status: "400", message: error.message, data: {} });
+                }
             }
-        }
+
+            // Delete user
+            const getUserQuery = `SELECT * FROM user WHERE id = ?`;
+            db.query(getUserQuery, [userId], (err, rows) => {
+                if (err) {
+                    return res.status(500).json({
+                        status: "500",
+                        message: "Internal server error",
+                        data: {},
+                    });
+                } else if (rows.length === 0) {
+                    return res.status(404).json({
+                        status: "404",
+                        message: "User not found, delete failed",
+                        data: {},
+                    });
+                }
+
+                const deletedUser = rows[0];
+
+                const deleteUserQuery = `DELETE FROM user WHERE id = ?`;
+                db.query(deleteUserQuery, [userId], (err) => {
+                    if (err) {
+                        return res.status(500).json({
+                            status: "500",
+                            message: "Internal server error",
+                            data: {},
+                        });
+                    }
+
+                    return res.status(200).json({
+                        status: "200",
+                        message: "User successfully deleted",
+                        data: {
+                            deletedUser,
+                        },
+                    });
+                });
+            });
     },
     profile: (req, res) => {
         const token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
@@ -225,21 +341,34 @@ const userController = {
                 });
             } else {
                 const userId = decoded.id;
-                const user = users.find((user) => user.id === userId);
 
-                if (!user) {
-                    console.log("User not found, token invalid")
-                    return res.status(404).json({
-                        status: "404",
-                        message: "User not found, token invalid",
-                        data: {},
+                // Check if user exists in db
+                const checkUserQuery = `SELECT * FROM user WHERE id = ?`;
+                db.query(checkUserQuery, [userId], (err, rows) => {
+                    if (err) {
+                        return res.status(500).json({
+                            status: "500",
+                            message: "Internal server error",
+                            data: {},
+                        });
+                    }
+
+                    if (rows.length === 0) {
+                        return res.status(404).json({
+                            status: "404",
+                            message: "User not found, token invalid",
+                            data: {},
+                        });
+                    }
+
+                    // User exists, return user
+                    // First replace isActive value with true if 1 and false if 0
+                    rows[0].isActive = rows[0].isActive === 1;
+                    return res.status(200).json({
+                        status: "200",
+                        message: "Success",
+                        data: rows[0],
                     });
-                }
-
-                res.status(200).json({
-                    status: "200",
-                    message: "Success",
-                    data: user,
                 });
             }
         });
