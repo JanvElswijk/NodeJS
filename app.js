@@ -10,9 +10,6 @@ const logger = require('./utils/logger').logger;
 const db = require('./utils/mysql-db');
 // const {users} = require("./utils/in-mem-db");
 
-
-
-
 app.use(bodyParser.json());
 
 app.use('*', (req, res, next) => {
