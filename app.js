@@ -18,20 +18,6 @@ app.use('*', (req, res, next) => {
     next();
 });
 
-app.get("/db", (req, res) => {
-    db.query('SELECT * FROM user', (err, rows) => {
-        if (err) {
-            console.log(err);
-        }
-        console.log(rows);
-        res.status(200).json({
-            status: "200",
-            message: "YES",
-            data: rows,
-        });
-    });
-});
-
 app.post("/api/login", (req, res) => {
     const { emailAdress, password } = req.body;
 
