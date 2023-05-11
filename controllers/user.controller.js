@@ -225,7 +225,7 @@ const userController = {
 
                 jwt.verify(token, jwtSecret, function (err, decoded) {
                     assert(!err, "Invalid token provided, edit failed");
-                    assert(parseInt(decoded.userId) === userId, "Forbidden");
+                    assert(parseInt(decoded.userId) === parseInt(userId), "Forbidden");
                 });
             } catch (error) {
                 switch (error.message) {

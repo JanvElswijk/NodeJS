@@ -20,14 +20,14 @@ const INSERT_USER =
     'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
     '(1, "first", "last", "j.doe@server.com", "Secret1234!", "street", "city") ' // 1
 
-const getWrongToken = (id) => {
+const getWrongToken = (userId) => {
     return jwt.sign({
-        id: id}, jwtConfig.wrongSecret);
+        userId: userId}, jwtConfig.wrongSecret);
 }
 
-const getValidToken = (id) => {
+const getValidToken = (userId) => {
     return jwt.sign({
-        id: id}, jwtConfig.secret);
+        userId: userId}, jwtConfig.secret);
 }
 
 chai.use(chaiHttp);
