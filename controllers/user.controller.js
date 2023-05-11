@@ -2,6 +2,7 @@ const assert = require("assert");
 
 const validation = require("../utils/validation");
 const db = require("../utils/mysql-db");
+const logger = require("../utils/logger").logger;
 
 
 const userController = {
@@ -27,7 +28,9 @@ const userController = {
 
         db.query(sql, params, (err, rows) => {
             if (err) {
+                logger.error(err.message)
                 if (err.code === "ER_BAD_FIELD_ERROR") {
+
                     return res.status(400).json({
                         status: "200",
                         message: "Users retrieved successfully",
@@ -43,6 +46,7 @@ const userController = {
             rows.forEach((row) => {
                 row.isActive = row.isActive === 1;
             });
+            logger.info("Users retrieved successfully")
             return res.status(200).json({
                 status: "200",
                 message: "Users retrieved successfully",
@@ -57,6 +61,7 @@ const userController = {
 
         db.query(sql, params, (err, rows) => {
             if (err) {
+                logger.error(err.message)
                 return res.status(500).json({
                     status: "500",
                     message: "Internal server error",
@@ -65,6 +70,7 @@ const userController = {
             }
 
             if (rows.length === 0) {
+                logger.warn("User not found, no user with that id")
                 return res.status(404).json({
                     status: "404",
                     message: "User not found, no user with that id",
@@ -73,6 +79,7 @@ const userController = {
             }
 
             rows[0].isActive = rows[0].isActive === 1;
+            logger.info("Success, user with that id found")
             return res.status(200).json({
                 status: "200",
                 message: "Success, user with that id found",
@@ -110,6 +117,7 @@ const userController = {
             assert(typeof phoneNumber === "string", "Phone number is not a string, registration failed");
             assert(validation.validatePhoneNumber(phoneNumber), "Phone number is not valid, registration failed");
         } catch (err) {
+            logger.error(err.message)
             return res.status(400).json({
                 status: "400",
                 message: err.message,
@@ -120,6 +128,7 @@ const userController = {
         const checkUserQuery = `SELECT * FROM user WHERE emailAdress = ?`;
         db.query(checkUserQuery, [emailAdress], (err, rows) => {
             if (err) {
+                logger.error(err.message)
                 return res.status(500).json({
                     status: "500",
                     message: "Internal server error",
@@ -127,6 +136,7 @@ const userController = {
                 });
             } else {
                 if (rows.length > 0) {
+                    logger.warn("User with that emailAdress already exists, registration failed")
                     return res.status(403).json({
                         status: "403",
                         message: "User with that emailAdress already exists, registration failed",
@@ -136,12 +146,14 @@ const userController = {
                     const newUserQuery = `INSERT INTO user (firstName, lastName, isActive, street, city, emailAdress, password, phoneNumber) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
                     db.query(newUserQuery, [firstName, lastName, 1, street, city, emailAdress, password, phoneNumber], (err, rows) => {
                         if (err) {
+                            logger.error(err.message)
                             return res.status(500).json({
                                 status: "500",
                                 message: "Internal server error",
                                 data: {},
                             });
                         } else {
+                            logger.info("New user registered")
                             return res.status(201).json({
                                 status: "201",
                                 message: "New user registered",
@@ -168,6 +180,7 @@ const userController = {
         const checkUserQuery = `SELECT * FROM user WHERE id = ?`;
         db.query(checkUserQuery, [userId], (err, rows) => {
             if (err) {
+                logger.error(err.message)
                 return res.status(500).json({
                     status: "500",
                     message: "Internal server error",
@@ -176,6 +189,7 @@ const userController = {
             }
 
             if (rows.length === 0) {
+                logger.warn("User not found, edit failed")
                 return res.status(404).json({
                     status: "404",
                     message: "User not found, edit failed",
@@ -192,6 +206,7 @@ const userController = {
                     assert(validation.validatePhoneNumber(req.body.phoneNumber), "Invalid phoneNumber format, edit failed");
                 }
             } catch (error) {
+                logger.error(error.message)
                 switch (error.message) {
                     case "Unauthorized":
                         return res.status(401).json({ status: "401", message: error.message, data: {} });
@@ -205,6 +220,7 @@ const userController = {
             const updateUserQuery = `UPDATE user SET ${Object.keys(req.body).map(key => `${key} = ?`).join(", ")} WHERE id = ?`;
             db.query(updateUserQuery, [...Object.values(req.body), userId], (err) => {
                 if (err) {
+                    logger.error(err.message)
                     return res.status(500).json({
                         status: "500",
                         message: "Internal server error",
@@ -212,6 +228,7 @@ const userController = {
                     });
                 }
 
+                logger.info("User successfully edited")
                 return res.status(200).json({
                     status: "200",
                     message: "User successfully edited",
@@ -227,12 +244,14 @@ const userController = {
             const getUserQuery = `SELECT * FROM user WHERE id = ?`;
             db.query(getUserQuery, [userId], (err, rows) => {
                 if (err) {
+                    logger.error(err.message)
                     return res.status(500).json({
                         status: "500",
                         message: "Internal server error",
                         data: {},
                     });
                 } else if (rows.length === 0) {
+                    logger.warn("User not found, delete failed")
                     return res.status(404).json({
                         status: "404",
                         message: "User not found, delete failed",
@@ -245,6 +264,7 @@ const userController = {
                 const deleteUserQuery = `DELETE FROM user WHERE id = ?`;
                 db.query(deleteUserQuery, [userId], (err) => {
                     if (err) {
+                        logger.error(err.message)
                         return res.status(500).json({
                             status: "500",
                             message: "Internal server error",
@@ -252,6 +272,7 @@ const userController = {
                         });
                     }
 
+                    logger.info("User successfully deleted")
                     return res.status(200).json({
                         status: "200",
                         message: "User successfully deleted",
@@ -265,12 +286,14 @@ const userController = {
     profile: (req, res) => {
         db.query("SELECT * FROM user WHERE id = 1", (err, rows) => {
             if (err) {
+                logger.error(err.message)
                 return res.status(500).json({
                     status: "500",
                     message: "Internal server error",
                     data: {},
                 });
             } else if (rows.length === 0) {
+                logger.warn("User not found")
                 return res.status(404).json({
                     status: "404",
                     message: "User not found",
@@ -278,6 +301,7 @@ const userController = {
                 });
             } else {
                 rows[0].isActive = rows[0].isActive === 1;
+                logger.info("Success")
                 return res.status(200).json({
                     status: "200",
                     message: "Success",
