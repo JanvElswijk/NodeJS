@@ -1,10 +1,7 @@
-
 const assert = require("assert");
+
 const validation = require("../utils/validation");
-// const jwt = require('jsonwebtoken');
-// const logger = require("../utils/logger").logger;
 const db = require("../utils/mysql-db");
-// const jwtSecret = require("../configs/jwt.config").secret;
 
 
 const userController = {
@@ -55,7 +52,6 @@ const userController = {
     },
     getUserById: (req, res) => {
         const userId = parseInt(req.params.userId);
-        // const token = (req.headers.authorization && req.headers.authorization.split(' ')[1]) || null;
         const sql = "SELECT * FROM user WHERE id = ?";
         const params = [userId];
 
@@ -76,23 +72,6 @@ const userController = {
                 });
             }
 
-            // if (token !== null) {
-            //     jwt.verify(token, jwtSecret, function (err, decoded) {
-            //         if (err) {
-            //             return res.status(401).json({
-            //                 status: "401",
-            //                 message: "Unauthorized, invalid token",
-            //                 data: {},
-            //             });
-            //         } else {
-            // if (parseInt(decoded.userId) === parseInt(req.params.userId)) {
-            //     rows[0].isActive = rows[0].isActive === 1;
-            //     return res.status(200).json({
-            //         status: "200",
-            //         message: "Success, user with that id found",
-            //         data: rows[0],
-            //     });
-            // } else {
             rows[0].isActive = rows[0].isActive === 1;
             return res.status(200).json({
                 status: "200",
@@ -138,7 +117,6 @@ const userController = {
             });
         }
 
-        // Check if user already exists
         const checkUserQuery = `SELECT * FROM user WHERE emailAdress = ?`;
         db.query(checkUserQuery, [emailAdress], (err, rows) => {
             if (err) {
@@ -155,7 +133,6 @@ const userController = {
                         data: {},
                     });
                 } else {
-                    // Create new user
                     const newUserQuery = `INSERT INTO user (firstName, lastName, isActive, street, city, emailAdress, password, phoneNumber) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
                     db.query(newUserQuery, [firstName, lastName, 1, street, city, emailAdress, password, phoneNumber], (err, rows) => {
                         if (err) {
@@ -188,7 +165,6 @@ const userController = {
     updateUser: (req, res) => {
         const userId = parseInt(req.params.userId);
 
-        // Check if user exists in db
         const checkUserQuery = `SELECT * FROM user WHERE id = ?`;
         db.query(checkUserQuery, [userId], (err, rows) => {
             if (err) {
@@ -207,22 +183,14 @@ const userController = {
                 });
             }
 
-            // User exists, check if token is valid
-            // const token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
             const { emailAdress } = req.body;
 
             try {
-                // assert(token, "Unauthorized");
                 assert(emailAdress, "Missing required field, emailAdress, edit failed");
                 assert(validation.validateEmailAdress(emailAdress), "Invalid emailAdress format, edit failed");
                 if (req.body.phoneNumber) {
                     assert(validation.validatePhoneNumber(req.body.phoneNumber), "Invalid phoneNumber format, edit failed");
                 }
-
-                // jwt.verify(token, jwtSecret, function (err, decoded) {
-                //     assert(!err, "Invalid token provided, edit failed");
-                //     assert(parseInt(decoded.userId) === parseInt(userId), "Forbidden");
-                // });
             } catch (error) {
                 switch (error.message) {
                     case "Unauthorized":
@@ -234,7 +202,6 @@ const userController = {
                 }
             }
 
-            // Update user
             const updateUserQuery = `UPDATE user SET ${Object.keys(req.body).map(key => `${key} = ?`).join(", ")} WHERE id = ?`;
             db.query(updateUserQuery, [...Object.values(req.body), userId], (err) => {
                 if (err) {
@@ -257,28 +224,6 @@ const userController = {
 
         const userId = parseInt(req.params.userId);
 
-            // User exists, check if token is valid
-            // const token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
-
-            // try {
-                // assert(token, "Unauthorized");
-
-                // jwt.verify(token, jwtSecret, function (err, decoded) {
-                //     assert(!err, "Invalid token provided, delete failed");
-                //     assert(parseInt(decoded.userId) === userId, "Forbidden");
-                // });
-            // } catch (error) {
-            //     switch (error.message) {
-            //         case "Unauthorized":
-            //             return res.status(401).json({ status: "401", message: error.message, data: {} });
-            //         case "Forbidden":
-            //             return res.status(403).json({ status: "403", message: error.message, data: {} });
-            //         default:
-            //             return res.status(400).json({ status: "400", message: error.message, data: {} });
-            //     }
-            // }
-
-            // Delete user
             const getUserQuery = `SELECT * FROM user WHERE id = ?`;
             db.query(getUserQuery, [userId], (err, rows) => {
                 if (err) {
@@ -318,57 +263,6 @@ const userController = {
             });
     },
     profile: (req, res) => {
-        // const token = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
-        //
-        // if (!token) {
-        //     return res.status(401).json({
-        //         status: "401",
-        //         message: "Unauthorized, no token provided",
-        //         data: {},
-        //     });
-        // }
-        //
-        // jwt.verify(token, jwtSecret, function (err, decoded) {
-        //     if (err) {
-        //         return res.status(401).json({
-        //             status: "401",
-        //             message: "Unauthorized",
-        //             data: {},
-        //         });
-        //     } else {
-        //         const userId = parseInt(decoded.userId);
-        //
-        //         // Check if user exists in db
-        //         const checkUserQuery = `SELECT * FROM user WHERE id = ?`;
-        //         db.query(checkUserQuery, [userId], (err, rows) => {
-        //             if (err) {
-        //                 return res.status(500).json({
-        //                     status: "500",
-        //                     message: "Internal server error",
-        //                     data: {},
-        //                 });
-        //             }
-        //
-        //             if (rows.length === 0) {
-        //                 return res.status(404).json({
-        //                     status: "404",
-        //                     message: "User not found, token invalid",
-        //                     data: {},
-        //                 });
-        //             }
-        //
-        //             // User exists, return user
-        //             // First replace isActive value with true if 1 and false if 0
-        //             rows[0].isActive = rows[0].isActive === 1;
-        //             return res.status(200).json({
-        //                 status: "200",
-        //                 message: "Success",
-        //                 data: rows[0],
-        //             });
-        //         });
-        //     }
-        // });
-
         db.query("SELECT * FROM user WHERE id = 1", (err, rows) => {
             if (err) {
                 return res.status(500).json({
