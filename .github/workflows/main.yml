@@ -16,6 +16,8 @@ jobs:
       DB_DATABASE: share_a_meal
       DB_USER: root
       DB_PASSWORD: root
+      JWT_SECRET: NeverGonnaGiveYouUp
+      JWT_WRONGSECRET: NeverGonnaLetYouDown
     services:
       mysql:
         image: mysql:5.7

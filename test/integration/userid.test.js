@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 
 const app = require('../../app');
 const db = require("../../utils/mysql-db");
-const jwtConfig = require('../../configs/jwt.config.json');
+const jwtConfig = require('../../configs/jwt.config.js');
 
 const CLEAR_MEAL_TABLE = 'DELETE IGNORE FROM `meal`;';
 const CLEAR_PARTICIPANTS_TABLE = 'DELETE IGNORE FROM `meal_participants_user`;';

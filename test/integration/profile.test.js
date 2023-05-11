@@ -8,7 +8,7 @@ const assert = require('assert');
 const jwt = require('jsonwebtoken');
 
 const app = require('../../app');
-const jwtConfig = require('../../configs/jwt.config.json');
+const jwtConfig = require('../../configs/jwt.config.js');
 const db = require("../../utils/mysql-db");
 
 const CLEAR_MEAL_TABLE = 'DELETE IGNORE FROM `meal`;';
