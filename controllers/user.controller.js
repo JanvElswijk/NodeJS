@@ -115,7 +115,7 @@ const userController = {
             assert(validation.validatePassword(password), "Password is not valid, registration failed");
             assert(phoneNumber, "Missing required fields for registration");
             assert(typeof phoneNumber === "string", "Phone number is not a string, registration failed");
-            assert(validation.validatePhoneNumber(phoneNumber), "Phone number is not valid, registration failed");
+            // assert(validation.validatePhoneNumber(phoneNumber), "Phone number is not valid, registration failed");
         } catch (err) {
             logger.warn(err.message)
             return res.status(400).json({
@@ -202,9 +202,9 @@ const userController = {
             try {
                 assert(emailAdress, "Missing required field, emailAdress, edit failed");
                 assert(validation.validateEmailAdress(emailAdress), "Invalid emailAdress format, edit failed");
-                if (req.body.phoneNumber) {
-                    assert(validation.validatePhoneNumber(req.body.phoneNumber), "Invalid phoneNumber format, edit failed");
-                }
+                // if (req.body.phoneNumber) {
+                //     assert(validation.validatePhoneNumber(req.body.phoneNumber), "Invalid phoneNumber format, edit failed");
+                // }
             } catch (error) {
                 logger.warn(error.message)
                 switch (error.message) {

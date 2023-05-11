@@ -6,13 +6,13 @@ function validateEmailAdress(emailAdress) {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(emailAdress);
 }
-function validatePhoneNumber(phoneNumber) {
-    const regex = /^\d{10}$/;
-    return regex.test(phoneNumber);
-}
+// function validatePhoneNumber(phoneNumber) {
+//     const regex = /^\d{10}$/;
+//     return regex.test(phoneNumber);
+// }
 
 module.exports = {
     validatePassword,
     validateEmailAdress,
-    validatePhoneNumber,
+    // validatePhoneNumber,
 }
