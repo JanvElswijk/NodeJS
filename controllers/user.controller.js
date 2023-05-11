@@ -4,7 +4,7 @@ const validation = require("../utils/validation");
 const jwt = require('jsonwebtoken');
 // const logger = require("../utils/logger").logger;
 const db = require("../utils/mysql-db");
-const jwtSecret = 'NeverGonnaGiveYouUp';
+const jwtSecret = require("../configs/jwt.config").secret;
 
 
 const userController = {
@@ -85,7 +85,7 @@ const userController = {
                             data: {},
                         });
                     } else {
-                        if (parseInt(decoded.id) === parseInt(req.params.userId)) {
+                        if (parseInt(decoded.userId) === parseInt(req.params.userId)) {
                             rows[0].isActive = rows[0].isActive === 1;
                             return res.status(200).json({
                                 status: "200",
@@ -225,7 +225,7 @@ const userController = {
 
                 jwt.verify(token, jwtSecret, function (err, decoded) {
                     assert(!err, "Invalid token provided, edit failed");
-                    assert(parseInt(decoded.id) === userId, "Forbidden");
+                    assert(parseInt(decoded.userId) === userId, "Forbidden");
                 });
             } catch (error) {
                 switch (error.message) {
@@ -269,7 +269,7 @@ const userController = {
 
                 jwt.verify(token, jwtSecret, function (err, decoded) {
                     assert(!err, "Invalid token provided, delete failed");
-                    assert(parseInt(decoded.id) === userId, "Forbidden");
+                    assert(parseInt(decoded.userId) === userId, "Forbidden");
                 });
             } catch (error) {
                 switch (error.message) {
@@ -340,7 +340,7 @@ const userController = {
                     data: {},
                 });
             } else {
-                const userId = decoded.id;
+                const userId = parseInt(decoded.userId);
 
                 // Check if user exists in db
                 const checkUserQuery = `SELECT * FROM user WHERE id = ?`;
