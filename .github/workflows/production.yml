@@ -1,12 +1,12 @@
-name: Main testing and deployment
+name: Production testing and deployment
 
 on:
   push:
     branches:
-      - main
+      - production
 
 jobs:
-  Tests:
+  integrationtests:
     runs-on: ubuntu-latest
     env:
       MYSQL_ROOT_PASSWORD: root
@@ -40,7 +40,7 @@ jobs:
       - name: npm install
         run: |
           npm install
-      
+
       - name: npm install mocha
         run: |
           npm i -g mocha
@@ -51,7 +51,7 @@ jobs:
           npm test -- --DB_PASSWORD {{env.MYSQL_ROOT_PASSWORD}} --DB_USER root --DB_NAME ${{env.DB_DATABASE}}
 
   Railway-deploy:
-    needs: Tests
+    needs: integrationtests
     runs-on: ubuntu-latest
     environment:
       name: Railway # naam van mijn environment op GitHub
@@ -61,7 +61,7 @@ jobs:
 
       - name: 'Current token'
         run: |
-          echo "secrets.RAILWAY_TOKEN: ${{ secrets.MAIN_RAILWAY_TOKEN }}"
+          echo "secrets.RAILWAY_TOKEN: ${{ secrets.PRODUCTION_RAILWAY_TOKEN }}"
 
       - name: Install Railway
         run: npm i -g @railway/cli
@@ -69,4 +69,4 @@ jobs:
       - name: Deploy server to Railway
         run: railway up
         env:
-          RAILWAY_TOKEN: ${{ secrets.MAIN_RAILWAY_TOKEN }}
+          RAILWAY_TOKEN: ${{ secrets.PRODUCTION_RAILWAY_TOKEN }}
