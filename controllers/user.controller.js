@@ -7,11 +7,11 @@ const logger = require("../utils/logger").logger;
 
 const userController = {
     getAllUsers: (req, res) => {
-        const query = req.query;
         const whereClauses = [];
         const params = [];
+        const queryFields = Object.entries(req.query);
 
-        for (const [key, value] of Object.entries(query)) {
+        for (const [key, value] of queryFields) {
             if (key === "isActive") {
                 whereClauses.push(`isActive = ?`);
                 params.push(value === "true" ? 1 : value === "false" ? 0 : value);
@@ -32,7 +32,7 @@ const userController = {
                     logger.warn(err.message)
                     return res.status(400).json({
                         status: "200",
-                        message: "Users retrieved successfully, no flters applied",
+                        message: "Users retrieved successfully, no filters applied",
                         data: {},
                     });
                 }
