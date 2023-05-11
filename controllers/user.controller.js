@@ -28,15 +28,15 @@ const userController = {
 
         db.query(sql, params, (err, rows) => {
             if (err) {
-                logger.error(err.message)
                 if (err.code === "ER_BAD_FIELD_ERROR") {
-
+                    logger.warn(err.message)
                     return res.status(400).json({
                         status: "200",
-                        message: "Users retrieved successfully",
+                        message: "Users retrieved successfully, no flters applied",
                         data: {},
                     });
                 }
+                logger.error(err.message)
                 return res.status(500).json({
                     status: "500",
                     message: "Internal server error",
@@ -117,7 +117,7 @@ const userController = {
             assert(typeof phoneNumber === "string", "Phone number is not a string, registration failed");
             assert(validation.validatePhoneNumber(phoneNumber), "Phone number is not valid, registration failed");
         } catch (err) {
-            logger.error(err.message)
+            logger.warn(err.message)
             return res.status(400).json({
                 status: "400",
                 message: err.message,
@@ -206,7 +206,7 @@ const userController = {
                     assert(validation.validatePhoneNumber(req.body.phoneNumber), "Invalid phoneNumber format, edit failed");
                 }
             } catch (error) {
-                logger.error(error.message)
+                logger.warn(error.message)
                 switch (error.message) {
                     case "Unauthorized":
                         return res.status(401).json({ status: "401", message: error.message, data: {} });

@@ -4,6 +4,8 @@ process.env.DB_DATABASE =
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const assert = require('assert');
+require('tracer').setLevel('error');
+
 
 const app = require('../../app');
 const db = require("../../utils/mysql-db");
@@ -22,7 +24,7 @@ chai.use(chaiHttp);
 
 chai.should();
 
-describe('2.4 Userid GET', () => {
+describe('UC-204 Opvragen van usergegevens bij ID', () => {
     beforeEach(done => {
         db.query(CLEAR_DB, [], (err) => {
             assert(err === null);
@@ -74,7 +76,7 @@ describe('2.4 Userid GET', () => {
             });
     });
 });
-describe('2.5 Userid PUT', () => {
+describe('UC-205 Wijzigen van usergegevens', () => {
     it('TC-205-1 Verplicht veld “emailAddress” ontbreekt', done => {
         chai
             .request(app)
@@ -170,7 +172,7 @@ describe('2.5 Userid PUT', () => {
             });
     });
 });
-describe('2.6 Userid DELETE', () => {
+describe('UC-206 Verwijderen van user', () => {
     it('TC-206-1 Gebruiker bestaat niet', done => {
         chai
             .request(app)

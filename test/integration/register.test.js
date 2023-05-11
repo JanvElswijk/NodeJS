@@ -5,6 +5,8 @@ process.env.DB_DATABASE =
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const assert = require('assert');
+require('tracer').setLevel('error');
+
 
 const app = require('../../app');
 const db = require("../../utils/mysql-db");
@@ -21,7 +23,7 @@ const INSERT_USER =
 chai.use(chaiHttp);
 
 chai.should();
-describe('2.1 Register', () => {
+describe('UC-201 Registreren als nieuwe user', () => {
     beforeEach(done => {
         db.query(CLEAR_DB, [], (err) => {
             assert(err === null);

@@ -3,11 +3,12 @@ const chaiHttp = require('chai-http');
 
 const app = require('../../app');
 const assert = require('assert');
+require('tracer').setLevel('error');
 
 chai.use(chaiHttp);
 
 chai.should();
-describe('1.1 Server-info', () => {
+describe('UC-102 Opvragen van systeeminformatie', () => {
     it('TC-102-1 Info message bevat alle correcte info', done => {
         chai
             .request(app)
