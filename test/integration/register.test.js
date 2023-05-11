@@ -42,7 +42,7 @@ describe('UC-201 Registreren als nieuwe user', () => {
                 lastName: "test",
                 street: "test",
                 city: "test",
-                emailAdress: "test@test.test",
+                emailAdress: "t.test@test.tst",
                 password: "Abcdefgh1!",
                 phoneNumber: "0612345678"
             })
@@ -92,7 +92,7 @@ describe('UC-201 Registreren als nieuwe user', () => {
                 lastName: "test",
                 street: "test",
                 city: "test",
-                emailAdress: "test2@test.test",
+                emailAdress: "t.test@test.tst",
                 password: "test",
                 phoneNumber: "0612345678"
             })
@@ -143,7 +143,7 @@ describe('UC-201 Registreren als nieuwe user', () => {
                 lastName: "test",
                 street: "test",
                 city: "test",
-                emailAdress: "test2@test.test",
+                emailAdress: "t.test@test.tst",
                 password: "Abcdefgh1!",
                 phoneNumber: "0612345678"
             })
@@ -160,7 +160,7 @@ describe('UC-201 Registreren als nieuwe user', () => {
                 data.lastName.should.be.a('string').that.equal('test');
                 data.street.should.be.a('string').that.equal('test');
                 data.city.should.be.a('string').that.equal('test');
-                data.emailAdress.should.be.a('string').that.equal('test2@test.test');
+                data.emailAdress.should.be.a('string').that.equal('t.test@test.tst');
                 data.password.should.be.a('string').that.equal('Abcdefgh1!');
                 data.phoneNumber.should.be.a('string').that.equal('0612345678');
 
