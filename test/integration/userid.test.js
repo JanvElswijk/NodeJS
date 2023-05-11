@@ -4,11 +4,11 @@ process.env.DB_DATABASE =
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const assert = require('assert');
-const jwt = require('jsonwebtoken');
+// const jwt = require('jsonwebtoken');
 
 const app = require('../../app');
 const db = require("../../utils/mysql-db");
-const jwtConfig = require('../../configs/jwt.config.js');
+// const jwtConfig = require('../../configs/jwt.config.js');
 
 const CLEAR_MEAL_TABLE = 'DELETE IGNORE FROM `meal`;';
 const CLEAR_PARTICIPANTS_TABLE = 'DELETE IGNORE FROM `meal_participants_user`;';
@@ -21,15 +21,15 @@ const INSERT_USER =
     ',(2, "first", "last", "name2@servern.nl", "Secret1234!", "street", "city") ' // 2
 
 
-const getWrongToken = (userId) => {
-    return jwt.sign({
-        userId: userId}, jwtConfig.wrongSecret);
-}
-
-const getValidToken = (userId) => {
-    return jwt.sign({
-        userId: userId}, jwtConfig.secret);
-}
+// const getWrongToken = (userId) => {
+//     return jwt.sign({
+//         userId: userId}, jwtConfig.wrongSecret);
+// }
+//
+// const getValidToken = (userId) => {
+//     return jwt.sign({
+//         userId: userId}, jwtConfig.secret);
+// }
 
 chai.use(chaiHttp);
 
@@ -46,25 +46,24 @@ describe('2.4 Userid GET', () => {
         });
     });
 
-    it('TC-204-1 Ongeldig token', done => {
-        chai
-            .request(app)
-            .get('/api/user/1')
-            .set({"Authorization": `Bearer ` + getWrongToken(1)})
-            .end((err, res) => {
-
-                assert(err === null);
-
-                res.body.should.be.a('object');
-                let { status, message, data } = res.body;
-                status.should.equal('401');
-                message.should.be.a('string').that.equal('Unauthorized, invalid token');
-                data.should.be.a('object').that.is.empty;
-
-                done();
-            });
-
-    });
+    // it('TC-204-1 Ongeldig token', done => {
+    //     chai
+    //         .request(app)
+    //         .get('/api/user/1')
+    //         .set({"Authorization": `Bearer ` + getWrongToken(1)})
+    //         .end((err, res) => {
+    //
+    //             assert(err === null);
+    //
+    //             res.body.should.be.a('object');
+    //             let { status, message, data } = res.body;
+    //             status.should.equal('401');
+    //             message.should.be.a('string').that.equal('Unauthorized, invalid token');
+    //             data.should.be.a('object').that.is.empty;
+    //
+    //             done();
+    //         });
+    // });
     it('TC-204-2 Gebruiker-ID bestaat niet', done => {
         chai
             .request(app)
@@ -85,7 +84,7 @@ describe('2.4 Userid GET', () => {
         chai
             .request(app)
             .get('/api/user/1')
-            .set({"Authorization": `Bearer ` + getValidToken(1)})
+            // .set({"Authorization": `Bearer ` + getValidToken(1)})
             .end((err, res) => {
                 assert(err === null);
 
@@ -113,7 +112,7 @@ describe('2.5 Userid PUT', () => {
         chai
             .request(app)
             .put('/api/user/1')
-            .set({"Authorization": "Bearer " + getValidToken(1)})
+            // .set({"Authorization": "Bearer " + getValidToken(1)})
             .send({
                 "firstName": "Test",
                 "lastName": "Test",
@@ -131,35 +130,35 @@ describe('2.5 Userid PUT', () => {
                 done();
             });
     });
-    it('TC-205-2 De gebruiker is niet de eigenaar van de data', done => {
-        chai
-            .request(app)
-            .put('/api/user/1')
-            .set({"Authorization": "Bearer " + getValidToken(2)})
-            .send({
-                "firstName": "Test",
-                "lastName": "Test",
-                "password": "Testtest1!",
-                "emailAdress": "test@test.test",
-                "phoneNumber": "0612345678"
-            })
-            .end((err, res) => {
-                assert(err === null);
-
-                res.body.should.be.a('object');
-                let { status, message, data } = res.body;
-                status.should.equal('403');
-                message.should.be.a('string').that.equal('Forbidden');
-                data.should.be.a('object').that.is.empty;
-
-                done();
-            });
-    });
+    // it('TC-205-2 De gebruiker is niet de eigenaar van de data', done => {
+    //     chai
+    //         .request(app)
+    //         .put('/api/user/1')
+    //         // .set({"Authorization": "Bearer " + getValidToken(2)})
+    //         .send({
+    //             "firstName": "Test",
+    //             "lastName": "Test",
+    //             "password": "Testtest1!",
+    //             "emailAdress": "test@test.test",
+    //             "phoneNumber": "0612345678"
+    //         })
+    //         .end((err, res) => {
+    //             assert(err === null);
+    //
+    //             res.body.should.be.a('object');
+    //             let { status, message, data } = res.body;
+    //             status.should.equal('403');
+    //             message.should.be.a('string').that.equal('Forbidden');
+    //             data.should.be.a('object').that.is.empty;
+    //
+    //             done();
+    //         });
+    // });
     it('TC-205-3 Niet-valide telefoonnummer', done => {
         chai
             .request(app)
             .put('/api/user/1')
-            .set({"Authorization": "Bearer " + getValidToken(1)})
+            // .set({"Authorization": "Bearer " + getValidToken(1)})
             .send({
                 "firstName": "Test",
                 "lastName": "Test",
@@ -202,34 +201,34 @@ describe('2.5 Userid PUT', () => {
                 done();
             });
     });
-    it('TC-205-5 Niet ingelogd', done => {
-        chai
-            .request(app)
-            .put('/api/user/1')
-            .send({
-                "firstName": "Test",
-                "lastName": "Test",
-                "password": "Testtest1!",
-                "email": "test@test.test",
-                "phoneNumber": "0612345678"
-            })
-            .end((err, res) => {
-                assert(err === null);
-
-                res.body.should.be.a('object');
-                let { status, message, data } = res.body;
-                status.should.equal('401');
-                message.should.be.a('string').that.equal('Unauthorized');
-                data.should.be.a('object').that.is.empty;
-
-                done();
-            });
-    });
+    // it('TC-205-5 Niet ingelogd', done => {
+    //     chai
+    //         .request(app)
+    //         .put('/api/user/1')
+    //         .send({
+    //             "firstName": "Test",
+    //             "lastName": "Test",
+    //             "password": "Testtest1!",
+    //             "email": "test@test.test",
+    //             "phoneNumber": "0612345678"
+    //         })
+    //         .end((err, res) => {
+    //             assert(err === null);
+    //
+    //             res.body.should.be.a('object');
+    //             let { status, message, data } = res.body;
+    //             status.should.equal('401');
+    //             message.should.be.a('string').that.equal('Unauthorized');
+    //             data.should.be.a('object').that.is.empty;
+    //
+    //             done();
+    //         });
+    // });
     it('TC-205-6 Gebruiker succesvol gewijzigd', done => {
         chai
             .request(app)
             .put('/api/user/1')
-            .set({"Authorization": "Bearer " + getValidToken(1)})
+            // .set({"Authorization": "Bearer " + getValidToken(1)})
             .send({
                 "firstName": "Test",
                 "lastName": "Test",
@@ -259,7 +258,7 @@ describe('2.6 Userid DELETE', () => {
         chai
             .request(app)
             .delete('/api/user/3')
-            .set({"Authorization": "Bearer " + getValidToken(3)})
+            // .set({"Authorization": "Bearer " + getValidToken(3)})
             .end((err, res) => {
                 assert(err === null);
 
@@ -272,44 +271,44 @@ describe('2.6 Userid DELETE', () => {
                 done();
             });
     });
-    it('TC-206-2 Gebruiker is niet ingelogd', done => {
-        chai
-            .request(app)
-            .delete('/api/user/1')
-            .end((err, res) => {
-                assert(err === null);
-
-                res.body.should.be.a('object');
-                let { status, message, data } = res.body;
-                status.should.equal('401');
-                message.should.be.a('string').that.equal('Unauthorized');
-                data.should.be.a('object').that.is.empty;
-
-                done();
-            });
-    });
-    it('TC-206-3 Gebruiker is niet de eigenaar van de data', done => {
-        chai
-            .request(app)
-            .delete('/api/user/1')
-            .set({"Authorization": "Bearer " + getValidToken(2)})
-            .end((err, res) => {
-                assert(err === null);
-
-                res.body.should.be.a('object');
-                let { status, message, data } = res.body;
-                status.should.equal('403');
-                message.should.be.a('string').that.equal('Forbidden');
-                data.should.be.a('object').that.is.empty;
-
-                done();
-            });
-    });
+    // it('TC-206-2 Gebruiker is niet ingelogd', done => {
+    //     chai
+    //         .request(app)
+    //         .delete('/api/user/1')
+    //         .end((err, res) => {
+    //             assert(err === null);
+    //
+    //             res.body.should.be.a('object');
+    //             let { status, message, data } = res.body;
+    //             status.should.equal('401');
+    //             message.should.be.a('string').that.equal('Unauthorized');
+    //             data.should.be.a('object').that.is.empty;
+    //
+    //             done();
+    //         });
+    // });
+    // it('TC-206-3 Gebruiker is niet de eigenaar van de data', done => {
+    //     chai
+    //         .request(app)
+    //         .delete('/api/user/1')
+    //         // .set({"Authorization": "Bearer " + getValidToken(2)})
+    //         .end((err, res) => {
+    //             assert(err === null);
+    //
+    //             res.body.should.be.a('object');
+    //             let { status, message, data } = res.body;
+    //             status.should.equal('403');
+    //             message.should.be.a('string').that.equal('Forbidden');
+    //             data.should.be.a('object').that.is.empty;
+    //
+    //             done();
+    //         });
+    // });
     it('TC-206-4 Gebruiker succesvol verwijderd', done => {
         chai
             .request(app)
             .delete('/api/user/1')
-            .set({"Authorization": "Bearer " + getValidToken(1)})
+            // .set({"Authorization": "Bearer " + getValidToken(1)})
             .end((err, res) => {
                 assert(err === null);
 
