@@ -12,6 +12,7 @@ const userController = {
     getAllUsers: (req, res) => {
         const whereClauses = [];
         const params = [];
+        let query = req.query;
 
         for (const [key, value] of Object.entries(query)) {
             if (key === "isActive") {
@@ -236,7 +237,7 @@ const userController = {
 
                 jwt.verify(token, jwtSecret, function (err, decoded) {
                     assert(!err, "Invalid token provided, edit failed");
-                    assert(parseInt(decoded.userId) === parseInt(userId), "Forbidden");
+                    assert(parseInt(decoded.userId) === userId, "Forbidden");
                 });
             } catch (error) {
                 logger.warn(error.message)

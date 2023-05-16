@@ -141,7 +141,7 @@ describe('UC-205 Wijzigen van usergegevens', () => {
                 "firstName": "Test",
                 "lastName": "Test",
                 "password": "Testtest1!",
-                "emailAdress": "test@test.test",
+                "emailAdress": "t.test@test.tst",
                 "phoneNumber": "0612345678"
             })
             .end((err, res) => {

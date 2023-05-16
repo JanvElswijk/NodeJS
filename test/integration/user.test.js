@@ -59,7 +59,7 @@ chai.should();
                     res.body.should.be.a('object');
                     let { status, message, data } = res.body;
                     status.should.equal('200');
-                    message.should.be.a('string').that.equal('Users retrieved successfully');
+                    message.should.be.a('string').that.equal('Users retrieved successfully, no filters applied');
                     data.should.be.empty;
 
                     done();
