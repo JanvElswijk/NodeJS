@@ -297,7 +297,7 @@ module.exports = {
                         res.status(200).json({
                             status: 200,
                             message: "All meals",
-                            data: { meals },
+                            data: { meals, length: rows.length },
                         });
                     }
                 });

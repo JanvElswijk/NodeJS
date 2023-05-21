@@ -112,7 +112,7 @@ describe('UC-301 Toevoegen van maaltijden', () => {
                 status.should.equal(201);
                 message.should.be.a('string').that.equal('Meal created');
                 data.should.be.a('object');
-                data.meal.should.have.property('mealId');
+                data.meal.should.have.property('id');
                 data.meal.should.have.property('name').equal('name');
                 data.meal.should.have.property('description').equal('description');
                 data.meal.should.have.property('price').equal(10.00);
