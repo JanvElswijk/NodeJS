@@ -41,38 +41,16 @@ module.exports = {
         const requiredValues = [name, description, price, dateTime, maxAmountOfParticipants, imageUrl];
         const optionalValues = [isVega, isVegan, isToTakeHome, allergenes];
 
-        let sql = "INSERT INTO meal (cookId, name, description, price, dateTime, maxAmountOfParticipants, imageUrl";
-        optionalValues.forEach((value, index) => {
-            if (value !== undefined) {
-                // add the optional value name to the sql query
-                sql += ", ";
-                switch (index) {
-                    case 0:
-                        sql += "isVega";
-                        break;
-                    case 1:
-                        sql += "isVegan";
-                        break;
-                    case 2:
-                        sql += "isToTakeHome";
-                        break;
-                    case 3:
-                        sql += "allergenes";
-                        break;
-                }
-            }
-        })
-        sql += ") VALUES (?,";
-        sql += "?,".repeat(requiredValues.length);
-        optionalValues.forEach((value) => {
-            if (value !== undefined) {
-                sql += "?,";
-            }
-        });
-        sql = sql.slice(0, -1) + ")";
+        const optionalColumns = optionalValues.filter(value => value !== undefined).map((_, index) => `optional${index + 1}`).join(', ');
+        const optionalPlaceholders = optionalValues.filter(value => value !== undefined).map(_ => '?').join(', ');
 
-        db.query(sql, [userId, ...requiredValues, ...optionalValues], (err, rows) => {
-            if (err) {
+        const sql = `INSERT INTO meal (name, description, price, dateTime, maxAmountOfParticipants, imageUrl, cookId${optionalColumns ? ', ' + optionalColumns : ''}) 
+             VALUES (?, ?, ?, ?, ?, ?, ?${optionalPlaceholders ? ', ' + optionalPlaceholders : ''})`;
+
+        const sqlValues = [...requiredValues, userId, ...optionalValues.filter(value => value !== undefined)];
+
+        db.query(sql, sqlValues, (err, rows) => {
+        if (err) {
                 logger.error(err);
                 return res.status(500).json({
                     status: 500,
