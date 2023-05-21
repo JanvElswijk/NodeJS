@@ -4,8 +4,6 @@ process.env.DB_DATABASE =
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const assert = require('assert');
-require('tracer').setLevel('error');
-
 
 const app = require('../../app');
 const db = require('../../utils/mysql-db');
@@ -42,7 +40,7 @@ chai.should();
 
                     res.body.should.be.a('object');
                     let { status, message, data } = res.body;
-                    status.should.equal('200');
+                    status.should.equal(200);
                     message.should.be.a('string').that.equal('Users retrieved successfully');
                     data.should.be.a('array');
                     data.length.should.be.greaterThan(1);
@@ -60,7 +58,7 @@ chai.should();
 
                     res.body.should.be.a('object');
                     let { status, message, data } = res.body;
-                    status.should.equal('200');
+                    status.should.equal(200);
                     message.should.be.a('string').that.equal('Users retrieved successfully, no filters applied');
                     data.should.be.empty;
 
@@ -76,7 +74,7 @@ chai.should();
 
                     res.body.should.be.a('object');
                     let { status, message, data } = res.body;
-                    status.should.equal('200');
+                    status.should.equal(200);
                     message.should.be.a('string').that.equal('Users retrieved successfully');
                     data.should.be.a('array').that.is.empty;
 
@@ -92,7 +90,7 @@ chai.should();
 
                     res.body.should.be.a('object');
                     let { status, message, data } = res.body;
-                    status.should.equal('200');
+                    status.should.equal(200);
                     message.should.be.a('string').that.equal('Users retrieved successfully');
                     data.should.be.a('array');
                     data[0].should.not.have.property('password');
@@ -110,7 +108,7 @@ chai.should();
 
                     res.body.should.be.a('object');
                     let { status, message, data } = res.body;
-                    status.should.equal('200');
+                    status.should.equal(200);
                     message.should.be.a('string').that.equal('Users retrieved successfully');
                     data.should.be.a('array');
                     data[0].should.not.have.property('password');

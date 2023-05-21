@@ -22,6 +22,9 @@ jobs:
         image: mysql:5.7
         ports:
           - '3306'
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          TZ: UTC
     steps:
       - uses: actions/checkout@main
 
@@ -36,6 +39,10 @@ jobs:
         run: |
           mysql -uroot -p${{env.MYSQL_ROOT_PASSWORD}} ${{env.DB_DATABASE}} < share-a-meal.sql
           mysql -uroot -p${{env.MYSQL_ROOT_PASSWORD}} ${{env.DB_DATABASE}} -e "SHOW TABLES;"
+
+      - name: Set database time zone
+        run: |
+          mysql -uroot -p${{ env.MYSQL_ROOT_PASSWORD }} ${{ env.DB_DATABASE }} -e "SET GLOBAL time_zone = '+00:00';"
 
       - name: npm install
         run: |

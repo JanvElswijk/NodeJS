@@ -3,12 +3,11 @@ const chaiHttp = require('chai-http');
 
 const app = require('../../app');
 const assert = require('assert');
-require('tracer').setLevel('error');
 
 chai.use(chaiHttp);
 
 chai.should();
-describe('UC-102 Opvragen van systeeminformatie', () => {
+describe('UC-102 Opgraven van systeeminformatie', () => {
     it('TC-102-1 Info message bevat alle correcte info', done => {
         chai
             .request(app)
@@ -18,7 +17,7 @@ describe('UC-102 Opvragen van systeeminformatie', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('200');
+                status.should.equal(200);
                 message.should.equal('Server info endpoint');
                 data.should.be.a('object');
                 data.studentName.should.equal('Jan van Elswijk');

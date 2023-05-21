@@ -1,13 +1,13 @@
 {
-  "name": "opdrachtles1",
+  "name": "shareameal",
   "version": "1.0.0",
-  "description": "",
+  "description": "ShareAMeal API voor Programmeren 4",
   "main": "app.js",
   "scripts": {
     "test": "mocha test/**/*.test.js --exit",
     "dev": "nodemon app.js"
   },
-  "author": "",
+  "author": "Jan van Elswijk",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.20.2",
