@@ -38,12 +38,13 @@ module.exports = {
             });
         }
 
-        const sql = "INSERT INTO meal (name, description, price, dateTime, maxAmountOfParticipants, imageUrl, isVega, isVegan, isToTakeHome, allergenes, cookId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         if (isVega === undefined) isVega = false;
         if (isVegan === undefined) isVegan = false;
         if (isToTakeHome === undefined) isToTakeHome = false;
-        if (allergenes === undefined) allergenes = " ";
-        const sqlValues = [name, description, price, dateTime, maxAmountOfParticipants, imageUrl, isVega, isVegan, isToTakeHome, allergenes, userId];
+        if (allergenes === undefined) allergenes = "";
+
+        let sqlValues = [name, description, price, dateTime, maxAmountOfParticipants, imageUrl, isVega, isVegan, isToTakeHome, allergenes, userId];
+        let sql = "INSERT INTO meal (name, description, price, dateTime, maxAmountOfParticipants, imageUrl, isVega, isVegan, isToTakeHome, allergenes, cookId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
         db.query(sql, sqlValues, (err, rows) => {
         if (err) {
