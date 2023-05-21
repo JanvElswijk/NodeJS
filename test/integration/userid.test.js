@@ -198,7 +198,7 @@ describe('UC-205 Wijzigen van usergegevens', () => {
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
                 status.should.equal(404);
-                message.should.be.a('string').that.equal('User with id 3 not found, edit failed');
+                message.should.be.a('string').that.equal('Gebruiker met ID 3 is verwijderd');
                 data.should.be.a('object').that.is.empty;
 
                 done();
