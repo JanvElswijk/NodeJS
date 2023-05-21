@@ -82,25 +82,24 @@ module.exports = {
                     city: rows[0].city,
                 };
                 logger.info("Meal created");
-                const meal = {
-                    id: mealId,
-                    name,
-                    description,
-                    price,
-                    dateTime,
-                    maxAmountOfParticipants,
-                    imageUrl,
-                    isVega,
-                    isVegan,
-                    isToTakeHome,
-                    allergenes,
-                    cook
-                };
 
                 res.status(201).json({
                     status: 201,
                     message: "Meal created",
-                    data: { meal },
+                    data: {
+                        id: mealId,
+                        name,
+                        description,
+                        price,
+                        dateTime,
+                        maxAmountOfParticipants,
+                        imageUrl,
+                        isVega,
+                        isVegan,
+                        isToTakeHome,
+                        allergenes,
+                        cook
+                    },
                 });
             });
         });
