@@ -308,7 +308,7 @@ const userController = {
         const deleteUserQuery = `DELETE FROM user WHERE id = ?`;
         db.query(deleteUserQuery, [userId], (err, rows) => {
             if (err) {
-                logger.error(err.message)
+                logger.error(err.message + "userId" + userId)
                 return res.status(500).json({
                     status: 500,
                     message: "Internal server error",
