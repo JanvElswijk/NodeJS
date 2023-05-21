@@ -41,10 +41,14 @@ module.exports = {
         if (isVega === undefined) isVega = false;
         if (isVegan === undefined) isVegan = false;
         if (isToTakeHome === undefined) isToTakeHome = false;
-        if (allergenes === undefined) allergenes = "";
-
+        if (allergenes === undefined) {
+            allergenes = "";
+        } else {
+            allergenes = `{${allergenes.join(',')}}`;
+        }
+        console.log(allergenes)
         let sqlValues = [name, description, price, dateTime, maxAmountOfParticipants, imageUrl, isVega, isVegan, isToTakeHome, allergenes, userId];
-        let sql = "INSERT INTO meal (name, description, price, dateTime, maxAmountOfParticipants, imageUrl, isVega, isVegan, isToTakeHome, allergenes, cookId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, (?), ?)"
+        let sql = "INSERT INTO meal (name, description, price, dateTime, maxAmountOfParticipants, imageUrl, isVega, isVegan, isToTakeHome, allergenes, cookId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
         db.query(sql, sqlValues, (err, rows) => {
         if (err) {

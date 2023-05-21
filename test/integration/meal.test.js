@@ -101,7 +101,8 @@ describe('UC-301 Toevoegen van maaltijden', () => {
                 price: 10.00,
                 dateTime: '2021-06-01 12:00:00',
                 maxAmountOfParticipants: 10,
-                imageUrl: 'imageUrl'
+                imageUrl: 'imageUrl',
+                allergens: ['gluten','lactose','noten']
             })
             .end((err, res) => {
                 assert(err === null);
