@@ -197,7 +197,7 @@ describe('UC-304 Opvragen van maaltijd bij ID', () => {
                 data.meal.should.have.property('name').equal('name');
                 data.meal.should.have.property('description').equal('description');
                 data.meal.should.have.property('price').equal("10.00");
-                data.meal.should.have.property('dateTime').equal('2021-06-01T10:00:00.000Z');
+                data.meal.should.have.property('dateTime').equal('2021-06-01T12:00:00.000Z');
                 data.meal.should.have.property('maxAmountOfParticipants').equal(10);
                 data.meal.should.have.property('imageUrl').equal('imageUrl');
                 data.meal.should.have.property('cook');
