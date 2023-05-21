@@ -27,7 +27,8 @@ module.exports = {
             assert(isVega === undefined || typeof isVega === "boolean", "IsVega must be a boolean");
             assert(isVegan === undefined || typeof isVegan === "boolean", "IsVegan must be a boolean");
             assert(isToTakeHome === undefined || typeof isToTakeHome === "boolean", "IsToTakeHome must be a boolean");
-            assert(allergenes === undefined || typeof allergenes === "string", "Allergenes must be a string");
+            //Alergenes is a SET in the database, that can only contain the following values: 'gluten','lactose','noten'
+            assert(allergenes === undefined || (Array.isArray(allergenes) && allergenes.every((value) => ["gluten", "lactose", "noten"].includes(value))), "Allergenes must be an array of strings containing only the values 'gluten','lactose','noten'");
         } catch (err) {
             logger.warn(err.message);
             return res.status(400).json({

@@ -220,15 +220,6 @@ const userController = {
         console.log("userId: " + userId)
         console.log("--- Update User ---")
 
-        if (tokenUserId !== userId) {
-            logger.warn("Unauthorized, edit failed")
-            return res.status(401).json({
-                status: 403,
-                message: "Forbidden",
-                data: {},
-            });
-        }
-
         // Kijken of de user met dat id bestaat
         const checkUserQuery = `SELECT * FROM user WHERE id = ?`;
         db.query(checkUserQuery, [userId], (err, rows) => {
@@ -249,6 +240,16 @@ const userController = {
                     data: {},
                 });
             }
+
+            if (tokenUserId !== userId) {
+                logger.warn("Unauthorized, edit failed")
+                return res.status(401).json({
+                    status: 403,
+                    message: "Forbidden",
+                    data: {},
+                });
+            }
+
 
             // Zorgen dat de input valid is, en email nog niet bestaat
             const { emailAdress } = req.body;
