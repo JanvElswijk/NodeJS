@@ -138,7 +138,11 @@ module.exports = {
             });
         }
 
-        allergenes = allergenes ? allergenes.split(',') : undefined;
+        if (allergenes === undefined) {
+            allergenes = "";
+        } else {
+            allergenes = `${allergenes.join(',')}`;
+        }
 
         const requiredValues = [name, price, maxAmountOfParticipants];
         const optionalValues = [description, dateTime, imageUrl, isVega, isVegan, isToTakeHome, allergenes];
