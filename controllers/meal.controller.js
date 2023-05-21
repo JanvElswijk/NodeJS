@@ -44,7 +44,7 @@ module.exports = {
         if (allergenes === undefined) {
             allergenes = "";
         } else {
-            allergenes = `{${allergenes.join(',')}}`;
+            allergenes = `${allergenes.join(',')}`;
         }
         console.log(allergenes)
         let sqlValues = [name, description, price, dateTime, maxAmountOfParticipants, imageUrl, isVega, isVegan, isToTakeHome, allergenes, userId];
