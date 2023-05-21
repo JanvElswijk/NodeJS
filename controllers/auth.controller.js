@@ -4,7 +4,7 @@ const assert = require('assert');
 const db = require("../utils/mysql-db");
 const jwtConfig = require("../configs/jwt.config");
 const {secret: jwtSecret} = require("../configs/jwt.config");
-const {validatePassword} = require("../utils/validation");
+const validation = require("../utils/validation");
 const logger = require("../utils/logger").logger;
 
 module.exports = {
@@ -13,6 +13,15 @@ module.exports = {
         const emailAdress = req.emailAdress;
         const password = req.password;
 
+        if (!validation.validatePassword(password)) {
+            logger.warn("Unauthorized, invalid password");
+            return res.status(401).json({
+                status: 400,
+                message: "Unauthorized, invalid password",
+                data: {},
+            });
+        }
+
         // Zoeken naar de user met die email
         db.query('SELECT * FROM user WHERE emailAdress = ?', [emailAdress], (err, rows) => {
                 if (err) {
@@ -20,15 +29,6 @@ module.exports = {
                     return res.status(500).json({
                         status: 500,
                         message: "Internal Server Error",
-                        data: {},
-                    });
-                }
-
-                if (validatePassword(password) === false) {
-                    logger.warn("Unauthorized, invalid password");
-                    return res.status(401).json({
-                        status: 400,
-                        message: "Unauthorized, invalid password",
                         data: {},
                     });
                 }
