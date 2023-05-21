@@ -197,6 +197,7 @@ const userController = {
                                     id: rows.insertId,
                                     firstName,
                                     lastName,
+                                    isActive: true,
                                     street,
                                     city,
                                     emailAdress,

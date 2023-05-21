@@ -24,6 +24,10 @@ module.exports = {
                 }
                 if (rows.length === 0) {
                     logger.warn("User not found");
+                    console.log("--------------------")
+                    console.log("User not found in login")
+                    console.log(emailAdress + " " + password)
+                    console.log("--------------------")
                     return res.status(404).json({
                         status: 404,
                         message: "User not found",
