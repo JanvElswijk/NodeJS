@@ -7,7 +7,7 @@ const assert = require('assert');
 chai.use(chaiHttp);
 
 chai.should();
-describe('1.1 Server-info', () => {
+describe('UC-102 Opgraven van systeeminformatie', () => {
     it('TC-102-1 Info message bevat alle correcte info', done => {
         chai
             .request(app)

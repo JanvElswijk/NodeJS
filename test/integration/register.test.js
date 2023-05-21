@@ -21,7 +21,7 @@ const INSERT_USER =
 chai.use(chaiHttp);
 
 chai.should();
-describe('2.1 Register', () => {
+describe('UC-201 Registreren als nieuwe user', () => {
     beforeEach(done => {
         db.query(CLEAR_DB, [], (err) => {
             assert(err === null);

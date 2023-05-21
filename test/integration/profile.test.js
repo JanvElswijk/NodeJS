@@ -34,7 +34,7 @@ chai.use(chaiHttp);
 
 chai.should();
 
-describe('2.3 Profile', () => {
+describe('UC-203 Opvragen van gebruikersprofiel', () => {
     beforeEach(done => {
         db.query(CLEAR_DB, [], (err) => {
             assert(err === null);

@@ -21,7 +21,7 @@ chai.use(chaiHttp);
 
 chai.should();
 
-describe('1.2 Login', () => {
+describe('UC-101 Inloggen', () => {
     beforeEach(done => {
         db.query(CLEAR_DB, [], (err) => {
             assert(err === null);
@@ -44,7 +44,7 @@ describe('1.2 Login', () => {
                 res.body.should.be.a('object');
                 let { status, message } = res.body;
                 status.should.equal('400');
-                message.should.be.a('string').that.equal('Missing required fields for login');
+                message.should.be.a('string').that.equal('Password is required');
 
                 done();
             });

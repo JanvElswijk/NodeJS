@@ -21,7 +21,7 @@ const INSERT_USER =
 chai.use(chaiHttp);
 
 chai.should();
-    describe('2.2 User', () => {
+    describe('UC-202 Opvragen van overzicht van users', () => {
         beforeEach(done => {
             db.query(CLEAR_DB, [], (err) => {
                 assert(err === null);

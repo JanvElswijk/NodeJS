@@ -110,7 +110,7 @@ describe('UC-204 Opvragen van usergegevens bij ID', () => {
     });
 });
 describe('UC-205 Wijzigen van usergegevens', () => {
-    it('TC-205-1 Verplicht veld “emailAddress” ontbreekt', done => {
+    it('TC-205-1 Verplicht veld “emailAdress” ontbreekt', done => {
         chai
             .request(app)
             .put('/api/user/1')
@@ -184,6 +184,7 @@ describe('UC-205 Wijzigen van usergegevens', () => {
         chai
             .request(app)
             .put('/api/user/3')
+            .set({"Authorization": "Bearer " + getValidToken(3)})
             .send({
                 "firstName": "Test",
                 "lastName": "Test",
@@ -267,7 +268,7 @@ describe('UC-206 Verwijderen van user', () => {
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
                 status.should.equal('404');
-                message.should.be.a('string').that.equal('User not found, delete failed');
+                message.should.be.a('string').that.equal('User with id 3 not found, delete failed');
                 data.should.be.a('object').that.is.empty;
 
                 done();
@@ -317,10 +318,8 @@ describe('UC-206 Verwijderen van user', () => {
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
                 status.should.equal('200');
-                message.should.be.a('string').that.equal('User successfully deleted');
-                data.should.be.a('object');
-                data.should.have.property('deletedUser').that.is.a('object');
-                data.deletedUser.should.have.property('id').that.equal(1);
+                message.should.be.a('string').that.equal('User with id 1 successfully deleted');
+                data.should.be.a('object').that.is.empty;
 
                 done();
             });
