@@ -106,13 +106,12 @@ describe('UC-101 Inloggen', () => {
                 message.should.be.a('string').that.equal('Login successful');
                 data.should.be.a('object');
                 data.should.have.property('token');
-                data.should.have.property('user');
-                data.user.should.have.property('id');
-                data.user.should.have.property('firstName');
-                data.user.should.have.property('lastName');
-                data.user.should.have.property('emailAdress');
-                data.user.should.have.property('street');
-                data.user.should.have.property('city');
+                data.should.have.property('id').that.equal(1);
+                data.should.have.property('firstName').that.equal('first');
+                data.should.have.property('lastName').that.equal('last');
+                data.should.have.property('emailAdress').that.equal('name@server.nl');
+                data.should.have.property('street').that.equal('street');
+                data.should.have.property('city').that.equal('city');
 
                 done();
             });
