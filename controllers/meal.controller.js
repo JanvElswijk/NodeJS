@@ -83,7 +83,7 @@ module.exports = {
                 };
                 logger.info("Meal created");
                 const meal = {
-                    mealId,
+                    id: mealId,
                     name,
                     description,
                     price,
