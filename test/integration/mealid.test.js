@@ -58,7 +58,7 @@ describe('UC-302 Wijzigen van maaltijd', () => {
 
                 res.body.should.be.a('object');
                 let { status, message } = res.body;
-                status.should.equal('400');
+                status.should.equal(400);
                 message.should.be.a('string').that.equal('MaxAmountOfParticipants is required');
 
                 done();
@@ -78,7 +78,7 @@ describe('UC-302 Wijzigen van maaltijd', () => {
 
                 res.body.should.be.a('object');
                 let { status, message } = res.body;
-                status.should.equal('401');
+                status.should.equal(401);
                 message.should.be.a('string').that.equal('Unauthorized');
 
                 done();
@@ -99,7 +99,7 @@ describe('UC-302 Wijzigen van maaltijd', () => {
 
                 res.body.should.be.a('object');
                 let { status, message } = res.body;
-                status.should.equal('403');
+                status.should.equal(403);
                 message.should.be.a('string').that.equal('Forbidden');
 
                 done();
@@ -120,7 +120,7 @@ describe('UC-302 Wijzigen van maaltijd', () => {
 
                 res.body.should.be.a('object');
                 let { status, message } = res.body;
-                status.should.equal('404');
+                status.should.equal(404);
                 message.should.be.a('string').that.equal('Meal not found');
 
                 done();
@@ -141,7 +141,7 @@ describe('UC-302 Wijzigen van maaltijd', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('200');
+                status.should.equal(200);
                 message.should.be.a('string').that.equal('Meal updated');
                 data.meal.should.be.a('object');
                 data.meal.should.have.property('mealId').that.equal(1);
@@ -176,7 +176,7 @@ describe('UC-304 Opvragen van maaltijd bij ID', () => {
 
                 res.body.should.be.a('object');
                 let { status, message } = res.body;
-                status.should.equal('404');
+                status.should.equal(404);
                 message.should.be.a('string').that.equal('Meal not found');
 
                 done();
@@ -191,7 +191,7 @@ describe('UC-304 Opvragen van maaltijd bij ID', () => {
 
                 res.body.should.be.a('object');
                 let { status, data } = res.body;
-                status.should.equal('200');
+                status.should.equal(200);
                 data.meal.should.be.a('object');
                 data.meal.should.have.property('mealId').equal(1);
                 data.meal.should.have.property('name').equal('name');
@@ -235,7 +235,7 @@ describe('UC-305 Verwijderen van maaltijden', () => {
 
                 res.body.should.be.a('object');
                 let { status, message } = res.body;
-                status.should.equal('401');
+                status.should.equal(401);
                 message.should.be.a('string').that.equal('Unauthorized');
 
                 done();
@@ -251,7 +251,7 @@ describe('UC-305 Verwijderen van maaltijden', () => {
 
                 res.body.should.be.a('object');
                 let { status, message } = res.body;
-                status.should.equal('403');
+                status.should.equal(403);
                 message.should.be.a('string').that.equal('Forbidden');
 
                 done();
@@ -267,7 +267,7 @@ describe('UC-305 Verwijderen van maaltijden', () => {
 
                 res.body.should.be.a('object');
                 let { status, message } = res.body;
-                status.should.equal('404');
+                status.should.equal(404);
                 message.should.be.a('string').that.equal('Meal not found');
 
                 done();
@@ -283,7 +283,7 @@ describe('UC-305 Verwijderen van maaltijden', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('200');
+                status.should.equal(200);
                 message.should.be.a('string').that.equal('Meal with id 1 deleted');
                 data.should.be.a('object').that.is.empty;
                 done();

@@ -58,7 +58,7 @@ describe('UC-204 Opvragen van usergegevens bij ID', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('401');
+                status.should.equal(401);
                 message.should.be.a('string').that.equal('Unauthorized, invalid token');
                 data.should.be.a('object').that.is.empty;
 
@@ -75,7 +75,7 @@ describe('UC-204 Opvragen van usergegevens bij ID', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('404');
+                status.should.equal(404);
                 message.should.be.a('string').that.equal('User not found, no user with that id');
                 data.should.be.a('object').that.is.empty;
 
@@ -92,7 +92,7 @@ describe('UC-204 Opvragen van usergegevens bij ID', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('200');
+                status.should.equal(200);
                 message.should.be.a('string').that.equal('Success, user with that id found');
                 data.should.be.a('object');
                 data.id.should.be.a('number').that.equal(1);
@@ -125,7 +125,7 @@ describe('UC-205 Wijzigen van usergegevens', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('400');
+                status.should.equal(400);
                 message.should.be.a('string').that.equal('Missing required field, emailAdress, edit failed');
                 data.should.be.a('object').that.is.empty;
 
@@ -149,7 +149,7 @@ describe('UC-205 Wijzigen van usergegevens', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('403');
+                status.should.equal(403);
                 message.should.be.a('string').that.equal('Forbidden');
                 data.should.be.a('object').that.is.empty;
 
@@ -173,7 +173,7 @@ describe('UC-205 Wijzigen van usergegevens', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('400');
+                status.should.equal(400);
                 message.should.be.a('string').that.equal('Invalid phoneNumber format, edit failed');
                 data.should.be.a('object').that.is.empty;
 
@@ -197,7 +197,7 @@ describe('UC-205 Wijzigen van usergegevens', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('404');
+                status.should.equal(404);
                 message.should.be.a('string').that.equal('User with id 3 not found, edit failed');
                 data.should.be.a('object').that.is.empty;
 
@@ -220,7 +220,7 @@ describe('UC-205 Wijzigen van usergegevens', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('401');
+                status.should.equal(401);
                 message.should.be.a('string').that.equal('Unauthorized');
                 data.should.be.a('object').that.is.empty;
 
@@ -244,7 +244,7 @@ describe('UC-205 Wijzigen van usergegevens', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('200');
+                status.should.equal(200);
                 message.should.be.a('string').that.equal('User successfully edited');
                 data.should.be.a('object');
                 data.should.have.property('id').that.is.a('number').that.equal(1);
@@ -267,7 +267,7 @@ describe('UC-206 Verwijderen van user', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('404');
+                status.should.equal(404);
                 message.should.be.a('string').that.equal('User with id 3 not found, delete failed');
                 data.should.be.a('object').that.is.empty;
 
@@ -283,7 +283,7 @@ describe('UC-206 Verwijderen van user', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('401');
+                status.should.equal(401);
                 message.should.be.a('string').that.equal('Unauthorized');
                 data.should.be.a('object').that.is.empty;
 
@@ -300,7 +300,7 @@ describe('UC-206 Verwijderen van user', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('403');
+                status.should.equal(403);
                 message.should.be.a('string').that.equal('Forbidden');
                 data.should.be.a('object').that.is.empty;
 
@@ -317,7 +317,7 @@ describe('UC-206 Verwijderen van user', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('200');
+                status.should.equal(200);
                 message.should.be.a('string').that.equal('User with id 1 successfully deleted');
                 data.should.be.a('object').that.is.empty;
 

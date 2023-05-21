@@ -26,7 +26,7 @@ app.use('*', (req, res, next) => {
 //     // Check if all fields are present and not empty
 //     if (!emailAdress || !password) {
 //         return res.status(400).json({
-//             status: "400",
+//             status: 400,
 //             message: "Missing required fields for login",
 //             data: {},
 //         });
@@ -36,21 +36,21 @@ app.use('*', (req, res, next) => {
 //         if (err) {
 //             console.log(err);
 //             return res.status(500).json({
-//                 status: "500",
+//                 status: 500,
 //                 message: "Internal Server Error",
 //                 data: {},
 //             });
 //         }
 //         if (rows.length === 0) {
 //             return res.status(404).json({
-//                 status: "404",
+//                 status: 404,
 //                 message: "User not found",
 //                 data: {},
 //             });
 //         }
 //         if (rows[0].password !== password) {
 //             return res.status(401).json({
-//                 status: "400",
+//                 status: 400,
 //                 message: "Unauthorized, invalid password",
 //                 data: {},
 //             });
@@ -58,7 +58,7 @@ app.use('*', (req, res, next) => {
 //         const token = jwt.sign({ userId: rows[0].id }, jwtConfig.secret);
 //         const user = rows[0];
 //         res.status(200).json({
-//             status: "200",
+//             status: 200,
 //             message: "Login successful",
 //             data: {user, token},
 //         });
@@ -68,7 +68,7 @@ app.use('*', (req, res, next) => {
 
 app.get("/api/info", (req, res) => {
     res.status(200).json({
-        status: "200",
+        status: 200,
         message: "Server info endpoint",
         data: {
             studentName: "Jan van Elswijk",

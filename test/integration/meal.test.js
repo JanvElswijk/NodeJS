@@ -61,7 +61,7 @@ describe('UC-301 Toevoegen van maaltijden', () => {
 
                 res.body.should.be.a('object');
                 let { status, message } = res.body;
-                status.should.equal('400');
+                status.should.equal(400);
                 message.should.be.a('string').that.equal('ImageUrl is required');
 
                 done();
@@ -84,7 +84,7 @@ describe('UC-301 Toevoegen van maaltijden', () => {
 
                 res.body.should.be.a('object');
                 let { status, message } = res.body;
-                status.should.equal('401');
+                status.should.equal(401);
                 message.should.be.a('string').that.equal('Unauthorized');
 
                 done();
@@ -108,7 +108,7 @@ describe('UC-301 Toevoegen van maaltijden', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('201');
+                status.should.equal(201);
                 message.should.be.a('string').that.equal('Meal created');
                 data.should.be.a('object');
                 data.meal.should.have.property('mealId');
@@ -153,7 +153,7 @@ describe('UC-303 Opvragen van alle maaltijden', () => {
 
                 res.body.should.be.a('object');
                 let { status, data } = res.body;
-                status.should.equal('200');
+                status.should.equal(200);
                 data.meals.should.be.a('array');
                 data.meals.length.should.equal(2);
                 data.meals[0].should.be.a('object');

@@ -54,7 +54,7 @@ describe('UC-203 Opvragen van gebruikersprofiel', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('401');
+                status.should.equal(401);
                 message.should.be.a('string').that.equal('Unauthorized');
                 data.should.be.a('object').that.is.empty;
 
@@ -72,7 +72,7 @@ describe('UC-203 Opvragen van gebruikersprofiel', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('200');
+                status.should.equal(200);
                 message.should.be.a('string').that.equal('Success');
                 data.should.be.a('object');
                 data.should.have.property('id').eql(1);

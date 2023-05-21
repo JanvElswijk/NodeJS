@@ -17,7 +17,7 @@ describe('UC-102 Opgraven van systeeminformatie', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('200');
+                status.should.equal(200);
                 message.should.equal('Server info endpoint');
                 data.should.be.a('object');
                 data.studentName.should.equal('Jan van Elswijk');

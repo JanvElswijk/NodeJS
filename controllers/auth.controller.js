@@ -17,7 +17,7 @@ module.exports = {
                 if (err) {
                     logger.error(err);
                     return res.status(500).json({
-                        status: "500",
+                        status: 500,
                         message: "Internal Server Error",
                         data: {},
                     });
@@ -25,7 +25,7 @@ module.exports = {
                 if (rows.length === 0) {
                     logger.warn("User not found");
                     return res.status(404).json({
-                        status: "404",
+                        status: 404,
                         message: "User not found",
                         data: {},
                     });
@@ -34,7 +34,7 @@ module.exports = {
                 if (rows[0].password !== password) {
                     logger.warn("Unauthorized, invalid password");
                     return res.status(401).json({
-                        status: "400",
+                        status: 400,
                         message: "Unauthorized, invalid password",
                         data: {},
                     });
@@ -44,7 +44,7 @@ module.exports = {
                 const user = rows[0];
                 logger.info("Login successful");
                 res.status(200).json({
-                    status: "200",
+                    status: 200,
                     message: "Login successful",
                     data: {user, token},
                 });
@@ -64,7 +64,7 @@ module.exports = {
         } catch (err) {
             logger.warn(err.message);
             return res.status(400).json({
-                status: "400",
+                status: 400,
                 message: err.message,
                 data: {},
             });
@@ -103,7 +103,7 @@ module.exports = {
             logger.warn(err.message);
             if (err.message === "Unauthorized") {
                 return res.status(401).json({
-                    status: "401",
+                    status: 401,
                     message: err.message,
                     data: {},
                 });

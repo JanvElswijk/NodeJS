@@ -43,7 +43,7 @@ describe('UC-101 Inloggen', () => {
 
                 res.body.should.be.a('object');
                 let { status, message } = res.body;
-                status.should.equal('400');
+                status.should.equal(400);
                 message.should.be.a('string').that.equal('Password is required');
 
                 done();
@@ -62,7 +62,7 @@ describe('UC-101 Inloggen', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('400');
+                status.should.equal(400);
                 message.should.be.a('string').that.equal('Unauthorized, invalid password');
                 data.should.be.a('object').that.is.empty;
 
@@ -82,7 +82,7 @@ describe('UC-101 Inloggen', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('404');
+                status.should.equal(404);
                 message.should.be.a('string').that.equal('User not found');
                 data.should.be.a('object').that.is.empty;
 
@@ -102,7 +102,7 @@ describe('UC-101 Inloggen', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('200');
+                status.should.equal(200);
                 message.should.be.a('string').that.equal('Login successful');
                 data.should.be.a('object');
                 data.should.have.property('token');

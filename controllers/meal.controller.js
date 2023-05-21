@@ -31,7 +31,7 @@ module.exports = {
         } catch (err) {
             logger.warn(err.message);
             return res.status(400).json({
-                status: "400",
+                status: 400,
                 message: err.message,
                 data: {},
             });
@@ -59,7 +59,7 @@ module.exports = {
             if (err) {
                 logger.error(err);
                 return res.status(500).json({
-                    status: "500",
+                    status: 500,
                     message: "Internal Server Error",
                     data: {},
                 });
@@ -71,7 +71,7 @@ module.exports = {
                 if (err) {
                     logger.error(err);
                     return res.status(500).json({
-                        status: "500",
+                        status: 500,
                         message: "Internal Server Error",
                         data: {},
                     });
@@ -106,7 +106,7 @@ module.exports = {
                 });
 
                 res.status(201).json({
-                    status: "201",
+                    status: 201,
                     message: "Meal created",
                     data: { meal },
                 });
@@ -140,7 +140,7 @@ module.exports = {
         } catch (err) {
             logger.warn(err.message);
             return res.status(400).json({
-                status: "400",
+                status: 400,
                 message: err.message,
                 data: {},
             });
@@ -163,7 +163,7 @@ module.exports = {
             if (err) {
                 logger.error(err);
                 return res.status(500).json({
-                    status: "500",
+                    status: 500,
                     message: "Internal Server Error",
                     data: {},
                 });
@@ -171,7 +171,7 @@ module.exports = {
 
             if (rows.length === 0) {
                 return res.status(404).json({
-                    status: "404",
+                    status: 404,
                     message: "Meal not found",
                     data: {},
                 });
@@ -179,7 +179,7 @@ module.exports = {
 
             if (rows[0].cookId !== parseInt(userId)) {
                 return res.status(403).json({
-                    status: "403",
+                    status: 403,
                     message: "Forbidden",
                     data: {},
                 });
@@ -189,7 +189,7 @@ module.exports = {
                 if (err) {
                     logger.error(err);
                     return res.status(500).json({
-                        status: "500",
+                        status: 500,
                         message: "Internal Server Error",
                         data: {},
                     });
@@ -199,7 +199,7 @@ module.exports = {
                     if (err) {
                         logger.error(err);
                         return res.status(500).json({
-                            status: "500",
+                            status: 500,
                             message: "Internal Server Error",
                             data: {},
                         });
@@ -234,7 +234,7 @@ module.exports = {
                     });
 
                     res.status(200).json({
-                        status: "200",
+                        status: 200,
                         message: "Meal updated",
                         data: { meal },
                     });
@@ -248,7 +248,7 @@ module.exports = {
             if (err) {
                 logger.error(err);
                 return res.status(500).json({
-                    status: "500",
+                    status: 500,
                     message: "Internal Server Error",
                     data: {},
                 });
@@ -262,7 +262,7 @@ module.exports = {
                     if (err) {
                         logger.error(err);
                         return res.status(500).json({
-                            status: "500",
+                            status: 500,
                             message: "Internal Server Error",
                             data: {},
                         });
@@ -299,7 +299,7 @@ module.exports = {
                     if (count === rows.length) {
                         // All cook information retrieved
                         res.status(200).json({
-                            status: "200",
+                            status: 200,
                             message: "All meals",
                             data: { meals },
                         });
@@ -310,7 +310,7 @@ module.exports = {
             if (rows.length === 0) {
                 // No meals, send response immediately
                 res.status(200).json({
-                    status: "200",
+                    status: 200,
                     message: "All meals",
                     data: { meals },
                 });
@@ -328,7 +328,7 @@ module.exports = {
             if (err) {
                 logger.error(err);
                 return res.status(500).json({
-                    status: "500",
+                    status: 500,
                     message: "Internal Server Error",
                     data: {},
                 });
@@ -336,7 +336,7 @@ module.exports = {
 
             if (rows.length === 0) {
                 return res.status(404).json({
-                    status: "404",
+                    status: 404,
                     message: "Meal not found",
                     data: {},
                 });
@@ -348,7 +348,7 @@ module.exports = {
                 if (err) {
                     logger.error(err);
                     return res.status(500).json({
-                        status: "500",
+                        status: 500,
                         message: "Internal Server Error",
                         data: {},
                     });
@@ -381,7 +381,7 @@ module.exports = {
                 };
 
                 res.status(200).json({
-                    status: "200",
+                    status: 200,
                     message: "Meal",
                     data: { meal },
                 });
@@ -397,14 +397,14 @@ module.exports = {
             if (err) {
                 logger.error(err);
                 return res.status(500).json({
-                    status: "500",
+                    status: 500,
                     message: "Internal Server Error",
                     data: {},
                 });
             }
             if (rows.length === 0) {
                 return res.status(404).json({
-                    status: "404",
+                    status: 404,
                     message: "Meal not found",
                     data: {},
                 });
@@ -412,7 +412,7 @@ module.exports = {
 
             if (rows[0].cookId !== userId) {
                 return res.status(403).json({
-                    status: "403",
+                    status: 403,
                     message: "Forbidden",
                     data: {},
                 });
@@ -422,14 +422,14 @@ module.exports = {
                 if (err) {
                     logger.error(err);
                     return res.status(500).json({
-                        status: "500",
+                        status: 500,
                         message: "Internal Server Error",
                         data: {},
                     });
                 }
 
                 res.status(200).json({
-                    status: "200",
+                    status: 200,
                     message: "Meal with id " + mealId + " deleted",
                     data: {},
                 });

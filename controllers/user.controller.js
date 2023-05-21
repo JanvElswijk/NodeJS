@@ -40,14 +40,14 @@ const userController = {
                 if (err.code === 'ER_BAD_FIELD_ERROR') {
                     logger.warn(err.message);
                     return res.status(400).json({
-                        status: '200',
+                        status: 200,
                         message: 'Users retrieved successfully, no filters applied',
                         data: [],
                     });
                 }
                 logger.error(err.message);
                 return res.status(500).json({
-                    status: '500',
+                    status: 500,
                     message: 'Internal server error',
                     data: [],
                 });
@@ -60,7 +60,7 @@ const userController = {
 
             logger.info('Users retrieved successfully');
             return res.status(200).json({
-                status: '200',
+                status: 200,
                 message: 'Users retrieved successfully',
                 data: rows,
             });
@@ -79,7 +79,7 @@ const userController = {
             } catch (err) {
                 logger.warn(err.message);
                 return res.status(401).json({
-                    status: "401",
+                    status: 401,
                     message: "Unauthorized, invalid token",
                     data: {},
                 });
@@ -93,14 +93,14 @@ const userController = {
             if (err) {
                 logger.error(err.message);
                 return res.status(500).json({
-                    status: "500",
+                    status: 500,
                     message: "Internal Server Error",
                     data: {},
                 });
             }
             if (rows.length === 0) {
                 return res.status(404).json({
-                    status: "404",
+                    status: 404,
                     message: "User not found, no user with that id",
                     data: {},
                 });
@@ -108,7 +108,7 @@ const userController = {
             logger.info("User retrieved successfully");
             rows[0].isActive = rows[0].isActive === 1;
             return res.status(200).json({
-                status: "200",
+                status: 200,
                 message: "Success, user with that id found",
                 data: rows[0],
             });
@@ -148,7 +148,7 @@ const userController = {
         } catch (err) {
             logger.warn(err.message)
             return res.status(400).json({
-                status: "400",
+                status: 400,
                 message: err.message,
                 data: {},
             });
@@ -160,7 +160,7 @@ const userController = {
             if (err) {
                 logger.error(err.message)
                 return res.status(500).json({
-                    status: "500",
+                    status: 500,
                     message: "Internal server error",
                     data: {},
                 });
@@ -168,7 +168,7 @@ const userController = {
                 if (rows.length > 0) {
                     logger.warn("User with that emailAdress already exists, registration failed")
                     return res.status(403).json({
-                        status: "403",
+                        status: 403,
                         message: "User with that emailAdress already exists, registration failed",
                         data: {},
                     });
@@ -179,14 +179,14 @@ const userController = {
                         if (err) {
                             logger.error(err.message)
                             return res.status(500).json({
-                                status: "500",
+                                status: 500,
                                 message: "Internal server error",
                                 data: {},
                             });
                         } else {
                             logger.info("New user registered")
                             return res.status(201).json({
-                                status: "201",
+                                status: 201,
                                 message: "New user registered",
                                 data: {
                                     id: rows.insertId,
@@ -213,7 +213,7 @@ const userController = {
         if (tokenUserId !== userId) {
             logger.warn("Unauthorized, edit failed")
             return res.status(401).json({
-                status: "403",
+                status: 403,
                 message: "Forbidden",
                 data: {},
             });
@@ -225,7 +225,7 @@ const userController = {
             if (err) {
                 logger.error(err.message)
                 return res.status(500).json({
-                    status: "500",
+                    status: 500,
                     message: "Internal server error",
                     data: {},
                 });
@@ -234,7 +234,7 @@ const userController = {
             if (rows.length === 0) {
                 logger.warn("User with id" + userId + "not found, edit failed")
                 return res.status(404).json({
-                    status: "404",
+                    status: 404,
                     message: `User with id ${userId} not found, edit failed`,
                     data: {},
                 });
@@ -252,7 +252,7 @@ const userController = {
             } catch (error) {
                 logger.warn(error.message)
                 return res.status(400).json({
-                    status: "400",
+                    status: 400,
                     message: error.message,
                     data: {}
                 });
@@ -264,7 +264,7 @@ const userController = {
                 if (err) {
                     logger.error(err.message)
                     return res.status(500).json({
-                        status: "500",
+                        status: 500,
                         message: "Internal server error",
                         data: {},
                     });
@@ -272,7 +272,7 @@ const userController = {
 
                 logger.info("User successfully edited")
                 return res.status(200).json({
-                    status: "200",
+                    status: 200,
                     message: "User successfully edited",
                     data: { id: userId, ...req.body },
                 });
@@ -287,7 +287,7 @@ const userController = {
         if (tokenUserId !== userId) {
             logger.warn("Unauthorized, delete failed")
             return res.status(401).json({
-                status: "403",
+                status: 403,
                 message: "Forbidden",
                 data: {},
             });
@@ -299,7 +299,7 @@ const userController = {
             if (err) {
                 logger.error(err.message)
                 return res.status(500).json({
-                    status: "500",
+                    status: 500,
                     message: "Internal server error",
                     data: {},
                 });
@@ -308,7 +308,7 @@ const userController = {
             if (rows.affectedRows === 0) {
                 logger.warn("User with id" + userId + "not found, delete failed")
                 return res.status(404).json({
-                    status: "404",
+                    status: 404,
                     message: `User with id ${userId} not found, delete failed`,
                     data: {},
                 });
@@ -316,7 +316,7 @@ const userController = {
 
             logger.info("User successfully deleted")
             return res.status(200).json({
-                status: "200",
+                status: 200,
                 message: "User with id " + userId + " successfully deleted",
                 data: {},
             });
@@ -331,7 +331,7 @@ const userController = {
         db.query(checkUserQuery, [tokenUserId], (err, rows) => {
             if (err) {
                 return res.status(500).json({
-                    status: "500",
+                    status: 500,
                     message: "Internal server error",
                     data: {},
                 });
@@ -340,7 +340,7 @@ const userController = {
             // Als user niet bestaat dan 404 User not found, token invalid (want dan was de userId van de token niet geldig)
             if (rows.length === 0) {
                 return res.status(404).json({
-                    status: "404",
+                    status: 404,
                     message: "User not found, token invalid",
                     data: {},
                 });
@@ -349,7 +349,7 @@ const userController = {
             // Als user wel bestaat dan 200 Success
             rows[0].isActive = rows[0].isActive === 1; // Dit is omdat de database boolean weergeeft als 1 of 0 ipv true of false
             return res.status(200).json({
-                status: "200",
+                status: 200,
                 message: "Success",
                 data: rows[0],
             });

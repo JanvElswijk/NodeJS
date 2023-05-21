@@ -49,7 +49,7 @@ describe('UC-201 Registreren als nieuwe user', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('400');
+                status.should.equal(400);
                 message.should.be.a('string').that.equal('Missing required fields for registration');
                 data.should.be.a('object').that.is.empty;
 
@@ -74,7 +74,7 @@ describe('UC-201 Registreren als nieuwe user', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('400');
+                status.should.equal(400);
                 message.should.be.a('string').that.equal('emailAdress is not valid, registration failed');
                 data.should.be.a('object').that.is.empty;
 
@@ -99,7 +99,7 @@ describe('UC-201 Registreren als nieuwe user', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('400');
+                status.should.equal(400);
                 message.should.be.a('string').that.equal('Password is not valid, registration failed');
                 data.should.be.a('object').that.is.empty;
 
@@ -125,7 +125,7 @@ describe('UC-201 Registreren als nieuwe user', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('403');
+                status.should.equal(403);
                 message.should.be.a('string').that.equal('User with that emailAdress already exists, registration failed');
                 data.should.be.a('object').that.is.empty;
 
@@ -150,7 +150,7 @@ describe('UC-201 Registreren als nieuwe user', () => {
 
                 res.body.should.be.a('object');
                 let { status, message, data } = res.body;
-                status.should.equal('201');
+                status.should.equal(201);
                 message.should.be.a('string').that.equal('New user registered');
                 data.should.be.a('object');
                 data.id.should.be.a('number');
