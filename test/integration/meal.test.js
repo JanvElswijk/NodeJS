@@ -161,7 +161,7 @@ describe('UC-303 Opvragen van alle maaltijden', () => {
                 data.meals[0].should.have.property('name').equal('name');
                 data.meals[0].should.have.property('description').equal('description');
                 data.meals[0].should.have.property('price').equal("10.00");
-                data.meals[0].should.have.property('dateTime').equal('2021-06-01T12:00:00.000Z');
+                data.meals[0].should.have.property('dateTime').equal('2021-06-01T10:00:00.000Z');
                 data.meals[0].should.have.property('maxAmountOfParticipants').equal(10);
                 data.meals[0].should.have.property('imageUrl').equal('imageUrl');
                 data.meals[0].should.have.property('cook');
@@ -177,7 +177,7 @@ describe('UC-303 Opvragen van alle maaltijden', () => {
                 data.meals[1].should.have.property('name').equal('name');
                 data.meals[1].should.have.property('description').equal('description');
                 data.meals[1].should.have.property('price').equal("10.00");
-                data.meals[1].should.have.property('dateTime').equal('2021-06-01T12:00:00.000Z');
+                data.meals[1].should.have.property('dateTime').equal('2021-06-01T10:00:00.000Z');
                 data.meals[1].should.have.property('maxAmountOfParticipants').equal(10);
                 data.meals[1].should.have.property('imageUrl').equal('imageUrl');
                 data.meals[1].should.have.property('cook');
