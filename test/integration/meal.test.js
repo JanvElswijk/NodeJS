@@ -158,7 +158,7 @@ describe('UC-303 Opvragen van alle maaltijden', () => {
                 data.meals.should.be.a('array');
                 data.meals.length.should.equal(2);
                 data.meals[0].should.be.a('object');
-                data.meals[0].should.have.property('mealId');
+                data.meals[0].should.have.property('id');
                 data.meals[0].should.have.property('name').equal('name');
                 data.meals[0].should.have.property('description').equal('description');
                 data.meals[0].should.have.property('price').equal("10.00");
@@ -174,7 +174,7 @@ describe('UC-303 Opvragen van alle maaltijden', () => {
                 data.meals[0].cook.should.have.property('street').equal('street');
                 data.meals[0].cook.should.have.property('city').equal('city');
                 data.meals[1].should.be.a('object');
-                data.meals[1].should.have.property('mealId');
+                data.meals[1].should.have.property('id');
                 data.meals[1].should.have.property('name').equal('name');
                 data.meals[1].should.have.property('description').equal('description');
                 data.meals[1].should.have.property('price').equal("10.00");

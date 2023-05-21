@@ -213,7 +213,7 @@ module.exports = {
                     };
                     logger.info("Meal updated");
                     const meal = {
-                        mealId: parseInt(mealId),
+                        id: parseInt(mealId),
                         name,
                         description,
                         price,
@@ -276,7 +276,7 @@ module.exports = {
                     };
 
                     meals.push({
-                        mealId: row.id,
+                        id: row.id,
                         name: row.name,
                         description: row.description,
                         price: row.price,
@@ -362,7 +362,7 @@ module.exports = {
                 };
 
                 const meal = {
-                    mealId: row.id,
+                    id: row.id,
                     name: row.name,
                     description: row.description,
                     price: row.price,

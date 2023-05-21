@@ -144,7 +144,7 @@ describe('UC-302 Wijzigen van maaltijd', () => {
                 status.should.equal(200);
                 message.should.be.a('string').that.equal('Meal updated');
                 data.meal.should.be.a('object');
-                data.meal.should.have.property('mealId').that.equal(1);
+                data.meal.should.have.property('id').that.equal(1);
                 data.meal.should.have.property('name').that.equal('name');
                 data.meal.should.have.property('price').that.equal(10.00);
                 data.meal.should.have.property('maxAmountOfParticipants').that.equal(10);
@@ -193,7 +193,7 @@ describe('UC-304 Opvragen van maaltijd bij ID', () => {
                 let { status, data } = res.body;
                 status.should.equal(200);
                 data.meal.should.be.a('object');
-                data.meal.should.have.property('mealId').equal(1);
+                data.meal.should.have.property('id').equal(1);
                 data.meal.should.have.property('name').equal('name');
                 data.meal.should.have.property('description').equal('description');
                 data.meal.should.have.property('price').equal("10.00");
