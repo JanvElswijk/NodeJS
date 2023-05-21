@@ -44,9 +44,24 @@ module.exports = {
         let sql = "INSERT INTO meal (cookId, name, description, price, dateTime, maxAmountOfParticipants, imageUrl";
         optionalValues.forEach((value, index) => {
             if (value !== undefined) {
-                sql += ", " + Object.keys(optionalValues)[index];
+                // add the optional value name to the sql query
+                sql += ", ";
+                switch (index) {
+                    case 0:
+                        sql += "isVega";
+                        break;
+                    case 1:
+                        sql += "isVegan";
+                        break;
+                    case 2:
+                        sql += "isToTakeHome";
+                        break;
+                    case 3:
+                        sql += "allergenes";
+                        break;
+                }
             }
-        });
+        })
         sql += ") VALUES (?,";
         sql += "?,".repeat(requiredValues.length);
         optionalValues.forEach((value) => {

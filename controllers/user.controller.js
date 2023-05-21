@@ -236,7 +236,7 @@ const userController = {
                 logger.warn("User with id" + userId + "not found, edit failed")
                 return res.status(404).json({
                     status: 404,
-                    message: `Gebruiker met ID ${userId} is verwijderd`,
+                    message: `User with id ${userId} not found, edit failed`,
                     data: {},
                 });
             }
@@ -328,7 +328,7 @@ const userController = {
             logger.info("User successfully deleted")
             return res.status(200).json({
                 status: 200,
-                message: "User with id " + userId + " successfully deleted",
+                message: `Gebruiker met ID ${userId} is verwijderd`,
                 data: {},
             });
         });
