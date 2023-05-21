@@ -86,6 +86,11 @@ const userController = {
             }
         }
 
+        console.log("--- getUserById ---")
+        console.log("userId: " + userId)
+        console.log("tokenUserId: " + tokenUserId)
+        console.log("--- getUserById ---")
+
         const sql = parseInt(tokenUserId) === parseInt(userId) ? 'SELECT * FROM user WHERE id = ?' : 'SELECT id, firstName, lastName, street, city, emailAdress, phoneNumber, isActive FROM user WHERE id = ?';
         const params = [userId];
 
@@ -209,6 +214,10 @@ const userController = {
         // Id uit params en req vergelijken
         const tokenUserId = parseInt(req.userId);
         const userId = parseInt(req.params.userId);
+        console.log("--- Update User ---")
+        console.log("tokenUserId: " + tokenUserId)
+        console.log("userId: " + userId)
+        console.log("--- Update User ---")
 
         if (tokenUserId !== userId) {
             logger.warn("Unauthorized, edit failed")
