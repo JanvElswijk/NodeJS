@@ -7,7 +7,7 @@ module.exports = {
     createMeal: (req, res) => {
         const userId = req.userId;
 
-        const { name, description, price, dateTime, maxAmountOfParticipants, imageUrl, isVega, isVegan, isToTakeHome, allergenes } = req.body;
+        let { name, description, price, dateTime, maxAmountOfParticipants, imageUrl, isVega, isVegan, isToTakeHome, allergenes } = req.body;
 
         try {
             assert(name, "Name is required");
@@ -38,16 +38,12 @@ module.exports = {
             });
         }
 
-        const requiredValues = [name, description, price, dateTime, maxAmountOfParticipants, imageUrl];
-        const optionalValues = [isVega, isVegan, isToTakeHome, allergenes];
-
-        const optionalColumns = optionalValues.filter(value => value !== undefined).map((_, index) => `optional${index + 1}`).join(', ');
-        const optionalPlaceholders = optionalValues.filter(value => value !== undefined).map(_ => '?').join(', ');
-
-        const sql = `INSERT INTO meal (name, description, price, dateTime, maxAmountOfParticipants, imageUrl, cookId${optionalColumns ? ', ' + optionalColumns : ''}) 
-             VALUES (?, ?, ?, ?, ?, ?, ?${optionalPlaceholders ? ', ' + optionalPlaceholders : ''})`;
-
-        const sqlValues = [...requiredValues, userId, ...optionalValues.filter(value => value !== undefined)];
+        const sql = "INSERT INTO meal (name, description, price, dateTime, maxAmountOfParticipants, imageUrl, isVega, isVegan, isToTakeHome, allergenes, cookId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        if (isVega === undefined) isVega = false;
+        if (isVegan === undefined) isVegan = false;
+        if (isToTakeHome === undefined) isToTakeHome = false;
+        if (allergenes === undefined) allergenes = " ";
+        const sqlValues = [name, description, price, dateTime, maxAmountOfParticipants, imageUrl, isVega, isVegan, isToTakeHome, allergenes, userId];
 
         db.query(sql, sqlValues, (err, rows) => {
         if (err) {
@@ -90,14 +86,12 @@ module.exports = {
                     dateTime,
                     maxAmountOfParticipants,
                     imageUrl,
+                    isVega,
+                    isVegan,
+                    isToTakeHome,
+                    allergenes,
                     cook
                 };
-
-                optionalValues.forEach((value, index) => {
-                    if (value !== undefined) {
-                        meal[Object.keys(optionalValues)[index]] = value;
-                    }
-                });
 
                 res.status(201).json({
                     status: 201,
