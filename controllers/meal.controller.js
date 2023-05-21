@@ -138,9 +138,7 @@ module.exports = {
             });
         }
 
-        if (allergenes === undefined) {
-            allergenes = "";
-        } else {
+        if (allergenes !== undefined) {
             allergenes = `${allergenes.join(',')}`;
         }
 
