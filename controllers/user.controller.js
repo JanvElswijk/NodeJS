@@ -245,7 +245,7 @@ const userController = {
                 logger.warn("User with id" + userId + "not found, edit failed")
                 return res.status(404).json({
                     status: 404,
-                    message: `User with id ${userId} not found, edit failed`,
+                    message: `Gebruiker met ID ${userId} is verwijderd`,
                     data: {},
                 });
             }

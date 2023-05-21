@@ -4,6 +4,7 @@ const assert = require('assert');
 const db = require("../utils/mysql-db");
 const jwtConfig = require("../configs/jwt.config");
 const {secret: jwtSecret} = require("../configs/jwt.config");
+const {validatePassword} = require("../utils/validation");
 const logger = require("../utils/logger").logger;
 
 module.exports = {
@@ -22,12 +23,18 @@ module.exports = {
                         data: {},
                     });
                 }
+
+                if (validatePassword(password) === false) {
+                    logger.warn("Unauthorized, invalid password");
+                    return res.status(401).json({
+                        status: 400,
+                        message: "Unauthorized, invalid password",
+                        data: {},
+                    });
+                }
+
                 if (rows.length === 0) {
                     logger.warn("User not found");
-                    console.log("--------------------")
-                    console.log("User not found in login")
-                    console.log(emailAdress + " " + password)
-                    console.log("--------------------")
                     return res.status(404).json({
                         status: 404,
                         message: "User not found",
@@ -50,7 +57,17 @@ module.exports = {
                 res.status(200).json({
                     status: 200,
                     message: "Login successful",
-                    data: {user, token},
+                    data: {token,
+                        id :user.id,
+                        emailAdress: user.emailAdress,
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        isActive: user.isActive === 1,
+                        street: user.street,
+                        city: user.city,
+                        password: user.password,
+                        phoneNumber: user.phoneNumber,
+                    },
                 });
             });
         },
